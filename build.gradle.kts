@@ -30,7 +30,7 @@ tasks {
     }
 
     patchPluginXml {
-        sinceBuild.set("231")
+        sinceBuild.set("233")
         untilBuild.set("241.*")
     }
 
@@ -46,4 +46,6 @@ tasks {
 }
 dependencies{
     implementation("com.ctrip.framework.apollo:apollo-openapi:2.2.0")
+    implementation("com.ctrip.framework.apollo:apollo-client:2.2.0")
+
 }

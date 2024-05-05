@@ -1,21 +1,20 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
     <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
-    <id>com.example.MyInlayHints</id>
+    <id>com.adgainai.ApolloConfigVisualization</id>
 
     <!-- Public plugin name should be written in Title Case.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
-    <name>MyInlayHints</name>
+    <name>ApolloConfigVisualization</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-    <vendor email="support@yourcompany.com" url="https://www.yourcompany.com">YourCompany</vendor>
+    <vendor email="support@yourcompany.com" url="https://www.yourcompany.com">adgainai</vendor>
 
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
-    Enter short description for your plugin here.<br>
-    <em>most HTML tags may be used</em>
+    apollo config visualization
   ]]></description>
 
     <!-- Product and plugin compatibility requirements.
@@ -26,13 +25,24 @@
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-        <lang.foldingBuilder language="JAVA" implementationClass="com.example.myinlayhints.MyFoldingBuilder"/>
+        <lang.foldingBuilder language="UAST"
+                             implementationClass="com.adgainai.apolloconfigvisualization.MyFoldingBuilder"
+                            />
+
+<!--        <lang.foldingBuilder language="UAST" implementationClass="com.example.myinlayhints.SimpleFoldingBuilder" order="last"-->
+<!--        />-->
+
         <projectConfigurable
                 id="ApolloConfigVisualizationSetting"
                 groupId="tools"
-                instance="com.example.myinlayhints.MyPluginConfigurable"
-                             displayName="ApolloConfigVisualization Setting"/>
-        <projectService serviceImplementation="com.example.myinlayhints.MyPluginProjectSettings"/>
+                instance="com.adgainai.apolloconfigvisualization.MyPluginConfigurable"
+                displayName="ApolloConfigVisualization Setting"/>
+        <projectService serviceImplementation="com.adgainai.apolloconfigvisualization.MyPluginProjectSettings"/>
 
     </extensions>
+
+        <projectListeners>
+            <listener class="com.adgainai.apolloconfigvisualization.FileOpenListener"
+                      topic="com.intellij.openapi.fileEditor.FileEditorManagerListener"/>
+        </projectListeners>
 </idea-plugin>

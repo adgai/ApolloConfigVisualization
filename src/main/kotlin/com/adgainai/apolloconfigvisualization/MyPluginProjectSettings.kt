@@ -1,4 +1,4 @@
-package com.example.myinlayhints
+package com.adgainai.apolloconfigvisualization
 
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.State
@@ -7,14 +7,16 @@ import com.intellij.openapi.project.Project
 import com.intellij.util.xmlb.XmlSerializerUtil
 
 @State(
-    name = "com.example.MyPluginProjectSettings",
-    storages = [Storage("MyPluginSettings.xml")]
+    name = "com.adgainai.apolloconfigvisualization.MyPluginProjectSettings",
+    storages = [Storage("apolloconfigvisualization_MyPluginSettings.xml")]
 )
 class MyPluginProjectSettings : PersistentStateComponent<MyPluginProjectSettings> {
     var token: String = ""
     var url: String = ""
     var serviceName: String = ""
     var methodSignature: String = ""
+    var env: String = ""
+
 
     companion object {
         fun getInstance(project: Project): MyPluginProjectSettings {

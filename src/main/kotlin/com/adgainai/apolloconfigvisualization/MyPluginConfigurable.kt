@@ -1,4 +1,4 @@
-package com.example.myinlayhints
+package com.adgainai.apolloconfigvisualization
 
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
@@ -23,7 +23,9 @@ class MyPluginConfigurable(private val project: Project) : Configurable {
     private val methodSignatureField = JBTextField(settings.methodSignature).apply {
         emptyText.text = "请输入方法签名多个逗号拼接，默认为：configUtils.getBool,configUtils.getBoolean"
     }
-
+    private val envField = JBTextField(settings.env).apply {
+        emptyText.text = "请输入环境,多个逗号拼接"
+    }
     override fun getDisplayName(): String = "ApolloConfigVisualization Setting"
 
     override fun createComponent(): JComponent {
@@ -32,6 +34,7 @@ class MyPluginConfigurable(private val project: Project) : Configurable {
             .addLabeledComponent(JBLabel("MethodSignatureField: "), methodSignatureField, 4, false)
             .addLabeledComponent(JBLabel("URL: "), urlField, 4, false)
             .addLabeledComponent(JBLabel("ServiceName: "), serviceNameField, 4, false)
+            .addLabeledComponent(JBLabel("ServiceName: "), envField, 4, false)
             .panel
 
 
@@ -49,7 +52,9 @@ class MyPluginConfigurable(private val project: Project) : Configurable {
     }
 
     override fun isModified(): Boolean {
-        return tokenField.text != settings.token || urlField.text != settings.url || serviceNameField.text != settings.serviceName || methodSignatureField.text !=settings.methodSignature
+        return tokenField.text != settings.token
+                || envField.text != settings.env
+                || urlField.text != settings.url || serviceNameField.text != settings.serviceName || methodSignatureField.text !=settings.methodSignature
     }
 
     override fun apply() {
@@ -57,6 +62,7 @@ class MyPluginConfigurable(private val project: Project) : Configurable {
         settings.url = urlField.text
         settings.serviceName = serviceNameField.text
         settings.methodSignature = methodSignatureField.text
+        settings.env = envField.text
     }
 
     override fun reset() {
@@ -64,6 +70,7 @@ class MyPluginConfigurable(private val project: Project) : Configurable {
         urlField.text = settings.url
         serviceNameField.text = settings.serviceName
         methodSignatureField.text = settings.methodSignature
+        envField.text = settings.env
     }
 
     override fun getHelpTopic(): String? = null

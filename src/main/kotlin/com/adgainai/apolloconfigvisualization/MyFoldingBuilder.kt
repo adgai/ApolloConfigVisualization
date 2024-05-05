@@ -1,25 +1,21 @@
-package com.example.myinlayhints
+package com.adgainai.apolloconfigvisualization
 
+import com.ctrip.framework.apollo.ConfigService
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient
 import com.intellij.lang.ASTNode
-import com.intellij.lang.folding.FoldingBuilder
+import com.intellij.lang.folding.FoldingBuilderEx
 import com.intellij.lang.folding.FoldingDescriptor
 import com.intellij.openapi.editor.Document
-import com.intellij.psi.JavaRecursiveElementVisitor
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiField
-import com.intellij.psi.PsiLiteralExpression
-import com.intellij.psi.PsiMethodCallExpression
-import com.intellij.psi.PsiModifier
-import com.intellij.psi.PsiReferenceExpression
+import com.intellij.psi.*
 import org.apache.commons.lang3.StringUtils
-import org.jetbrains.uast.util.isInstanceOf
 
 
-class MyFoldingBuilder : FoldingBuilder {
+class MyFoldingBuilder : FoldingBuilderEx() {
 
     lateinit var apolloClient: ApolloOpenApiClient
-
+    override fun buildFoldRegions(p0: PsiElement, p1: Document, p2: Boolean): Array<FoldingDescriptor> {
+        return buildFoldRegions(p0.node, p1);
+    }
 
     override fun buildFoldRegions(node: ASTNode, document: Document): Array<FoldingDescriptor> {
         val descriptors = mutableListOf<FoldingDescriptor>()
@@ -32,8 +28,11 @@ class MyFoldingBuilder : FoldingBuilder {
             splitMethodSignatureList = arrayListOf(
                 "configUtils.getBool",
                 "configUtils.getBoolean",
+                "configHolder.getBool",
+                "configHolder.getBoolean",
                 "configUtils.getInt",
-                "configUtils.getLong"
+                "configUtils.getLong",
+                "configUtils.getInteger",
             );
         }
 
@@ -47,7 +46,18 @@ class MyFoldingBuilder : FoldingBuilder {
                 if (splitMethodSignatureList.contains(expression.methodExpression.qualifiedName)) {
                     // 创建一个 FoldingDescriptor 并添加到列表中
                     val range = expression.textRange
-                    descriptors.add(FoldingDescriptor(expression.node, range))
+
+                    val placeholderText = "Apollo config " + getPlaceholderText(expression.node)
+                    val element = FoldingDescriptor(
+                        expression.node,
+                        range,
+                        null,
+                        HashSet(),
+                        false,
+                        placeholderText,
+                        true
+                    )
+                    descriptors.add(element)
                 }
 
 //                val qualifiedName = expression.resolveMethod()?.containingClass?.qualifiedName
@@ -94,26 +104,37 @@ class MyFoldingBuilder : FoldingBuilder {
                 apolloClient = ApolloOpenApiClient.newBuilder().withToken(token).withPortalUrl(url).build()
             }
 
-
-            val apolloValue =
-                apolloClient.getItem(
-                    serviceName,
-                    "dev",
-                    "default",
-                    "application",
-                    staticConstantValue.toString()
-                )?.value
-
-
-            if (apolloValue == null) {
-                return defaultValue.toString()
-            } else {
-                return apolloValue.toString()
+            var envList = settings.env.split(",").filter { s -> StringUtils.isNotBlank(s) }
+            if (envList.size == 0) {
+                envList = arrayListOf(
+                    "ndev",
+                    "qa",
+                    "prod"
+                );
             }
 
+            var v = ""
+            envList.forEach {
+                var apolloValue =
+                    apolloClient.getItem(
+                        serviceName,
+                        it,
+                        "default",
+                        "application",
+                        staticConstantValue.toString()
+                    )?.value
 
+
+                if (apolloValue == null) {
+                    apolloValue = defaultValue.toString()
+                }
+
+                v += "$it:$apolloValue";
+                v += " "
+            }
+
+            return v
         }
-
 
         return ""
     }
