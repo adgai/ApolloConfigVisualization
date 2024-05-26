@@ -23,19 +23,19 @@ class MyFoldingBuilder : FoldingBuilderEx() {
         val root = node.psi
         val project = root.project
 
-        val settings = MyPluginProjectSettings.getInstance(project)
-        var splitMethodSignatureList = settings.methodSignature.split(",").filter { s -> StringUtils.isNotBlank(s) }
-        if (splitMethodSignatureList.size == 0) {
-            splitMethodSignatureList = arrayListOf(
-                "configUtils.getBool",
-                "configUtils.getBoolean",
-                "configHolder.getBool",
-                "configHolder.getBoolean",
-                "configUtils.getInt",
-                "configUtils.getLong",
-                "configUtils.getInteger",
-            );
-        }
+//        val settings = MyPluginProjectSettings.getInstance(project)
+//        var splitMethodSignatureList = settings.methodSignature.split(",").filter { s -> StringUtils.isNotBlank(s) }
+//        if (splitMethodSignatureList.size == 0) {
+        var splitMethodSignatureList = arrayListOf(
+            "configUtils.getBool",
+            "configUtils.getBoolean",
+            "configHolder.getBool",
+            "configHolder.getBoolean",
+            "configUtils.getInt",
+            "configUtils.getLong",
+            "configUtils.getInteger",
+        );
+//        }
 
 
         // 使用递归访问者遍历 PSI 树查找方法调用
@@ -143,9 +143,10 @@ class MyFoldingBuilder : FoldingBuilderEx() {
             envToKeyToValue.keys.forEach { key ->
                 val stringMap = envToKeyToValue.get(key);
                 v += key
-                v += ','
-                v += stringMap?.getOrDefault(staticConstantValue.toString(), defaultValue = defaultValue.toString()) ?: ""
-
+                v += ':'
+                v += stringMap?.getOrDefault(staticConstantValue.toString(), defaultValue = defaultValue.toString())
+                    ?: ""
+                v += ";"
 
             }
 //            envToKeyToValue.entries.forEach { kv ->

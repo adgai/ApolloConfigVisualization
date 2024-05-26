@@ -32,12 +32,12 @@
 <!--        <lang.foldingBuilder language="UAST" implementationClass="com.example.myinlayhints.SimpleFoldingBuilder" order="last"-->
 <!--        />-->
 
-        <projectConfigurable
-                id="ApolloConfigVisualizationSetting"
-                groupId="tools"
-                instance="com.adgainai.apolloconfigvisualization.MyPluginConfigurable"
-                displayName="ApolloConfigVisualization Setting"/>
-        <projectService serviceImplementation="com.adgainai.apolloconfigvisualization.MyPluginProjectSettings"/>
+<!--        <projectConfigurable-->
+<!--                id="ApolloConfigVisualizationSetting"-->
+<!--                groupId="tools"-->
+<!--                instance="com.adgainai.apolloconfigvisualization.MyPluginConfigurable"-->
+<!--                displayName="ApolloConfigVisualization Setting"/>-->
+<!--        <projectService serviceImplementation="com.adgainai.apolloconfigvisualization.MyPluginProjectSettings"/>-->
 
 
 

@@ -7,156 +7,137 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.FormBuilder
 import com.intellij.util.ui.JBUI
 import org.jetbrains.annotations.Nls
+import java.awt.Component
 import java.awt.Dimension
-import java.awt.GridBagConstraints
-import java.awt.GridBagLayout
 import java.awt.event.ActionEvent
 import javax.swing.*
+import javax.swing.table.DefaultTableCellRenderer
 import javax.swing.table.DefaultTableModel
-
 
 class ApolloViewConfigurable(private val project: Project) : Configurable {
     private var mainPanel: JPanel? = null
     private var tableModel: DefaultTableModel? = null
     private var keyValueTable: JTable? = null
     private var cookieTextField: JTextField? = null
-    private var foldingWhenEveryOpenFileRadioButton: JRadioButton? = null
-
+    private var foldingWhenEveryOpenFileRadioButton: JCheckBox? = null
 
     override fun getDisplayName(): @Nls(capitalization = Nls.Capitalization.Title) String? {
         return "My Plugin Configuration"
     }
 
     override fun createComponent(): JComponent? {
-        mainPanel = JPanel(GridBagLayout())
+        mainPanel = JPanel()
+            .apply {
+                layout = BoxLayout(this, BoxLayout.Y_AXIS)
+                alignmentX = Component.LEFT_ALIGNMENT
+            }
 
-
-        foldingWhenEveryOpenFileRadioButton = JRadioButton("是否每次重新打开文件都折叠所有可以折叠的代码:")
+        foldingWhenEveryOpenFileRadioButton = JCheckBox("是否每次重新打开文件都折叠所有可以折叠的代码")
+            .apply {
+                alignmentX = Component.LEFT_ALIGNMENT
+            }
 
         // Define the cookie input field
         cookieTextField = JTextField().apply {
             preferredSize = Dimension(400, 30)
             toolTipText = "Enter your cookie here"
+            alignmentX = Component.LEFT_ALIGNMENT
         }
 
         // Define table model with two columns: Key and Value
-        tableModel = DefaultTableModel(arrayOf<Any>("env", "curl"), 0)
+        tableModel = DefaultTableModel(arrayOf("env", "curl"), 0)
 
         keyValueTable = JTable(tableModel).apply {
             setDefaultRenderer(Any::class.java, CustomTableCellRenderer())
             tableHeader.background = JBColor.LIGHT_GRAY
             rowHeight = 25
             fillsViewportHeight = true
+            alignmentX = Component.LEFT_ALIGNMENT
         }
 
-        keyValueTable!!.fillsViewportHeight = true
-        keyValueTable!!.rowHeight = 25
-
-        val scrollPane = JScrollPane(keyValueTable)
-        scrollPane.preferredSize = Dimension(400, 200)
-
-        val addButton = JButton("Add")
-        addButton.preferredSize = Dimension(80, 30)
-        addButton.addActionListener { e: ActionEvent? ->
-            tableModel!!.addRow(
-                arrayOf<Any>(
-                    "",
-                    ""
-                )
-            )
+        val scrollPane = JScrollPane(keyValueTable).apply {
+            preferredSize = Dimension(400, 200)
+            alignmentX = Component.LEFT_ALIGNMENT
         }
 
-        val removeButton = JButton("Remove")
-        removeButton.preferredSize = Dimension(80, 30)
-        removeButton.addActionListener { e: ActionEvent? ->
-            val selectedRow = keyValueTable!!.selectedRow
-            if (selectedRow != -1) {
-                tableModel!!.removeRow(selectedRow)
+        val addButton = JButton("+").apply {
+            preferredSize = Dimension(30, 30)
+            alignmentX = Component.LEFT_ALIGNMENT
+            addActionListener {
+                tableModel!!.addRow(arrayOf("", ""))
             }
         }
 
-
-        // Layout constraints
-        val gbc = GridBagConstraints().apply {
-            insets = JBUI.insets(10)
-            fill = GridBagConstraints.HORIZONTAL
-            anchor = GridBagConstraints.NORTH
+        val removeButton = JButton("-").apply {
+            preferredSize = Dimension(30, 30)
+            alignmentX = Component.LEFT_ALIGNMENT
+            addActionListener {
+                val selectedRow = keyValueTable!!.selectedRow
+                if (selectedRow != -1) {
+                    tableModel!!.removeRow(selectedRow)
+                }
+            }
         }
 
-        gbc.apply {
-            gridx = 0
-            gridy = 0
-            gridwidth = 2
+        // Create a panel for the buttons and set its layout
+        val buttonPanel = JPanel().apply {
+            layout = BoxLayout(this, BoxLayout.X_AXIS)
+            alignmentX = Component.LEFT_ALIGNMENT
+            add(addButton)
+            add(Box.createRigidArea(Dimension(10, 0)))  // Add some space between buttons
+            add(removeButton)
         }
 
-        mainPanel!!.add(foldingWhenEveryOpenFileRadioButton)
+        val foldingPanel = JPanel().apply {
+            layout = BoxLayout(this, BoxLayout.X_AXIS)
+            alignmentX = Component.LEFT_ALIGNMENT
+            add(foldingWhenEveryOpenFileRadioButton)
+        }
 
-        gbc.gridx = 0
-        gbc.gridy = 1
-        val panel = FormBuilder.createFormBuilder()
-            .addLabeledComponent(JBLabel("Cookie: "), cookieTextField!!, 4, false)
-            .panel
-
-        mainPanel!!.add(panel, gbc)
-
-
-        gbc.insets = JBUI.insets(10)
-        gbc.fill = GridBagConstraints.HORIZONTAL
-        gbc.anchor = GridBagConstraints.NORTH
-
-        gbc.gridx = 0
-        gbc.gridy = 2
-        gbc.gridwidth = 2
-        mainPanel!!.add(scrollPane, gbc)
-
-        gbc.gridx = 0
-        gbc.gridy = 3
-        gbc.gridwidth = 1
-        mainPanel!!.add(addButton, gbc)
-
-        gbc.gridx = 1
-        gbc.gridy = 3
-        gbc.gridwidth = 1
-        mainPanel!!.add(removeButton, gbc)
+        // Add components to the main panel
+        mainPanel!!.apply {
+            add(foldingPanel)
+//            add(Box.createRigidArea(Dimension(0, 20)))  // Add vertical space of 30
+            val panel = FormBuilder.createFormBuilder()
+                .addLabeledComponent(JBLabel("Cookie: "), cookieTextField!!, 4, false)
+                .panel.also {
+                    it.alignmentX = Component.LEFT_ALIGNMENT
+                }
+            add(panel)
+//            add(Box.createRigidArea(Dimension(0, 20)))  // Add vertical space of 30
+            add(buttonPanel)
+//            add(Box.createRigidArea(Dimension(0, 20)))  // Add vertical space of 30
+            add(scrollPane)
+        }
 
         return mainPanel
     }
 
     override fun isModified(): Boolean {
-        val settings = ApolloViewConfiguration.getInstance(
-            project
-        )
-        val storedKeyValues: List<ApolloViewConfiguration.KeyValue> = settings.keyValues
-        val b = storedKeyValues != currentKeyValues
-        val b1 = !settings.cookie.equals(cookieTextField?.text ?: "")
-        val b2 = !settings.foldingWhenEveryOpenFile.equals(foldingWhenEveryOpenFileRadioButton!!.isSelected)
+        val settings = ApolloViewConfiguration.getInstance(project)
+        val storedKeyValues = settings.keyValues
+        val isKeyValuesModified = storedKeyValues != currentKeyValues
+        val isCookieModified = settings.cookie != (cookieTextField?.text ?: "")
+        val isFoldingModified = settings.foldingWhenEveryOpenFile != foldingWhenEveryOpenFileRadioButton!!.isSelected
 
-        return b || b1 || b2
-
-
+        return isKeyValuesModified || isCookieModified || isFoldingModified
     }
 
     override fun apply() {
         val configuration = ApolloViewConfiguration.getInstance(project)
         configuration.keyValues.clear()
-        val currentKeyValues =
-            currentKeyValues
-        for (keyValue in currentKeyValues) {
+        currentKeyValues.forEach { keyValue ->
             configuration.addKeyValue(keyValue.key, keyValue.value)
         }
 
         configuration.cookie = cookieTextField?.text ?: ""
         configuration.foldingWhenEveryOpenFile = foldingWhenEveryOpenFileRadioButton!!.isSelected
-
     }
 
     override fun reset() {
         tableModel!!.rowCount = 0 // Clear the table
-        val configuration = ApolloViewConfiguration.getInstance(
-            project
-        )
-        val keyValues: List<ApolloViewConfiguration.KeyValue> = configuration.keyValues
-        for (keyValue in keyValues) {
+        val configuration = ApolloViewConfiguration.getInstance(project)
+        configuration.keyValues.forEach { keyValue ->
             tableModel!!.addRow(arrayOf<Any?>(keyValue.key, keyValue.value))
         }
 
@@ -166,17 +147,28 @@ class ApolloViewConfigurable(private val project: Project) : Configurable {
 
     private val currentKeyValues: List<ApolloViewConfiguration.KeyValue>
         get() {
-            val keyValues: MutableList<ApolloViewConfiguration.KeyValue> = ArrayList()
+            val keyValues = mutableListOf<ApolloViewConfiguration.KeyValue>()
             val rowCount = tableModel!!.rowCount
             for (i in 0 until rowCount) {
                 val key = tableModel!!.getValueAt(i, 0) as String
                 val value = tableModel!!.getValueAt(i, 1) as String
-                val keyValue = ApolloViewConfiguration.KeyValue()
-                keyValue.key = key
-                keyValue.value = value
-                keyValues.add(keyValue)
+                val element = ApolloViewConfiguration.KeyValue()
+                element.key = key
+                element.value = value
+                keyValues.add(element)
             }
             return keyValues
         }
 }
 
+class CustomTableCellRenderer : DefaultTableCellRenderer() {
+    override fun getTableCellRendererComponent(
+        table: JTable?, value: Any?, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int
+    ): Component {
+        val component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column)
+        if (component is JLabel) {
+            component.horizontalAlignment = JLabel.CENTER
+        }
+        return component
+    }
+}

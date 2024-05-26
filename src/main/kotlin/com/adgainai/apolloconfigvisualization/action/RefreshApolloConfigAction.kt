@@ -7,6 +7,7 @@ import com.alibaba.fastjson2.JSON
 import com.alibaba.fastjson2.TypeReference
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -17,12 +18,8 @@ class RefreshApolloConfigAction : AnAction("refresh Apollo Config Visualization"
 
     override fun actionPerformed(event: AnActionEvent) {
 //        val currentTime = System.currentTimeMillis()
-//        if (currentTime - lastClickTime < 100) {
-//            Messages.showMessageDialog(
-//                "Please wait 30 seconds before clicking again.",
-//                "Info",
-//                Messages.getInformationIcon()
-//            )
+//        if (currentTime - lastClickTime < 5000) {
+//            event.project?.let { showNotification(it, "5s可刷新一次") }
 //            return
 //        }
 //
@@ -41,15 +38,15 @@ class RefreshApolloConfigAction : AnAction("refresh Apollo Config Visualization"
             return
         }
 
-        val message = keyValues.joinToString("\n") { "Key: ${it.key}, Value: ${it.value}" }
-        Messages.showMessageDialog(
-            message,
-            "Configuration",
-            Messages.getInformationIcon()
-        )
+//        val message = keyValues.joinToString("\n") { "Key: ${it.key}, Value: ${it.value}" }
+//        Messages.showMessageDialog(
+//            message,
+//            "Configuration",
+//            Messages.getInformationIcon()
+//        )
 
 
-        sendGetRequestWithOkHttp(configuration)
+        sendGetRequestWithOkHttp(configuration, project)
 
     }
 
@@ -58,9 +55,7 @@ class RefreshApolloConfigAction : AnAction("refresh Apollo Config Visualization"
         event.presentation.isEnabled = System.currentTimeMillis() - lastClickTime >= 30000
     }
 
-//    var url = "http://81.68.181.139/apps/iafajfsk/envs/DEV/clusters/default/namespaces"
-
-    fun sendGetRequestWithOkHttp(config: ApolloViewConfiguration) {
+    fun sendGetRequestWithOkHttp(config: ApolloViewConfiguration, project: Project) {
         val client = OkHttpClient()
         var envToKeyToValue: MutableMap<String, MutableMap<String, String>> = mutableMapOf()
 
@@ -73,33 +68,39 @@ class RefreshApolloConfigAction : AnAction("refresh Apollo Config Visualization"
                 .build()
 
             client.newCall(request).execute().use { response ->
+//                showNotification(project, "加载Apollo配置")
                 if (!response.isSuccessful) {
 
-                    Messages.showMessageDialog(
-                        String.format("环境：%s，加载配置失败", env),
-                        "ApolloView",
-                        Messages.getInformationIcon()
-                    )
+//                    Messages.showMessageDialog(
+//                        String.format("环境：%s，加载配置失败", env),
+//                        "ApolloView",
+//                        Messages.getInformationIcon()
+//                    )
+                    val content = "加载环境 $env Apollo失败"
+                    showNotification(project,content)
 
-                }
-                val body = response.body
-                if (body != null) {
-                    val string = body.string()
-                    val typeReference = object : TypeReference<List<NamespaceBO>>() {}
+                } else {
+                    val body = response.body
+                    if (body != null) {
+                        val content = "加载环境 $env Apollo成功"
+                        showNotification(project, content)
+                        val string = body.string()
+                        val typeReference = object : TypeReference<List<NamespaceBO>>() {}
 
-                    val parseObject: List<NamespaceBO> = JSON.parseObject(string, typeReference)
+                        val parseObject: List<NamespaceBO> = JSON.parseObject(string, typeReference)
 
-                    val orDefault: MutableMap<String, String> = envToKeyToValue.computeIfAbsent(env.toString(), { mutableMapOf() })
-                    for (openNamespaceDTO in parseObject) {
-                        val associate = openNamespaceDTO.items.associate { it.item.key to it.item.value }
-                        orDefault.putAll(associate)
+                        val orDefault: MutableMap<String, String> =
+                            envToKeyToValue.computeIfAbsent(env.toString(), { mutableMapOf() })
+                        for (openNamespaceDTO in parseObject) {
+                            val associate = openNamespaceDTO.items.associate { it.item.key to it.item.value }
+                            orDefault.putAll(associate)
+                        }
+                    } else {
+                        val content = "加载环境 $env Apollo失败"
+                        showNotification(project,content)
                     }
-
-
                 }
-
             }
-
 
             config.envToKeyToValue = envToKeyToValue
 
