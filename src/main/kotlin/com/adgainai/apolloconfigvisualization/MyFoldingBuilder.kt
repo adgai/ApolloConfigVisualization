@@ -1,12 +1,13 @@
 package com.adgainai.apolloconfigvisualization
 
-import com.ctrip.framework.apollo.ConfigService
+import com.adgainai.apolloconfigvisualization.config.ApolloViewConfiguration
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient
 import com.intellij.lang.ASTNode
 import com.intellij.lang.folding.FoldingBuilderEx
 import com.intellij.lang.folding.FoldingDescriptor
 import com.intellij.openapi.editor.Document
 import com.intellij.psi.*
+import org.apache.commons.collections.MapUtils
 import org.apache.commons.lang3.StringUtils
 
 
@@ -47,7 +48,7 @@ class MyFoldingBuilder : FoldingBuilderEx() {
                     // 创建一个 FoldingDescriptor 并添加到列表中
                     val range = expression.textRange
 
-                    val placeholderText = "Apollo config " + getPlaceholderText(expression.node)
+                    val placeholderText = "Apollo config is: " + getPlaceholderText(expression.node)
                     val element = FoldingDescriptor(
                         expression.node,
                         range,
@@ -83,7 +84,7 @@ class MyFoldingBuilder : FoldingBuilderEx() {
         val element = node.psi
 
         val project = element.project
-        val settings = MyPluginProjectSettings.getInstance(project)
+//        val settings = MyPluginProjectSettings.getInstance(project)
 
         if (element is PsiMethodCallExpression) {
             val methodCallExpression = element
@@ -94,49 +95,75 @@ class MyFoldingBuilder : FoldingBuilderEx() {
             val staticConstantValue = getStaticConstantValue(arguments[0])
             val defaultValue = getBooleanValue(arguments[1])
 
+//
+//            val token = settings.token
+//            val url = settings.url
+//            val serviceName = settings.serviceName
 
-            val token = settings.token
-            val url = settings.url
-            val serviceName = settings.serviceName
-
-            val initialized = ::apolloClient.isInitialized
-            if (!initialized) {
-                apolloClient = ApolloOpenApiClient.newBuilder().withToken(token).withPortalUrl(url).build()
-            }
-
-            var envList = settings.env.split(",").filter { s -> StringUtils.isNotBlank(s) }
-            if (envList.size == 0) {
-                envList = arrayListOf(
-                    "ndev",
-                    "qa",
-                    "prod"
-                );
-            }
+//            val initialized = ::apolloClient.isInitialized
+//            if (!initialized) {
+//                apolloClient = ApolloOpenApiClient.newBuilder().withToken(token).withPortalUrl(url).build()
+//            }
+//
+//            var envList = settings.env.split(",").filter { s -> StringUtils.isNotBlank(s) }
+//            if (envList.size == 0) {
+//                envList = arrayListOf(
+//                    "ndev",
+//                    "qa",
+//                    "prod"
+//                );
+//            }
 
             var v = ""
-            envList.forEach {
-                var apolloValue =
-                    apolloClient.getItem(
-                        serviceName,
-                        it,
-                        "default",
-                        "application",
-                        staticConstantValue.toString()
-                    )?.value
-
-
-                if (apolloValue == null) {
-                    apolloValue = defaultValue.toString()
-                }
-
-                v += "$it:$apolloValue";
-                v += " "
+//            envList.forEach {
+//                var apolloValue =
+//                    apolloClient.getItem(
+//                        serviceName,
+//                        it,
+//                        "default",
+//                        "application",
+//                        staticConstantValue.toString()
+//                    )?.value
+//
+//
+//                if (apolloValue == null) {
+//                    apolloValue = defaultValue.toString()
+//                }
+//
+//                v += "$it:$apolloValue";
+//                v += " "
+//            }
+            val configuration = ApolloViewConfiguration.getInstance(
+                project
+            )
+            val envToKeyToValue: Map<String, Map<String, String>> = configuration.envToKeyToValue
+            if (MapUtils.isEmpty(envToKeyToValue)) {
+                return ""
             }
+            envToKeyToValue.keys.forEach { key ->
+                val stringMap = envToKeyToValue.get(key);
+                v += key
+                v += ','
+                v += stringMap?.getOrDefault(staticConstantValue.toString(), defaultValue = defaultValue.toString()) ?: ""
+
+
+            }
+//            envToKeyToValue.entries.forEach { kv ->
+//                {
+//                    val env = kv.key
+//                    val kvmap = kv.value
+//                    v += env
+//                    v += ','
+//                    v += kvmap.getOrDefault(staticConstantValue.toString(), defaultValue = defaultValue.toString())
+//
+//                }
+//
+//            }
 
             return v
         }
 
-        return ""
+        return null
     }
 
     override fun isCollapsedByDefault(node: ASTNode): Boolean {

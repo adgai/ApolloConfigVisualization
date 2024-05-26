@@ -47,5 +47,9 @@ tasks {
 dependencies{
     implementation("com.ctrip.framework.apollo:apollo-openapi:2.2.0")
     implementation("com.ctrip.framework.apollo:apollo-client:2.2.0")
+    implementation("com.squareup.okhttp3:okhttp:4.9.2")
+//    implementation("com.ctrip.framework.apollo:apollo:2.2.0")
+    implementation ("com.alibaba.fastjson2:fastjson2:2.0.50")
+
 
 }

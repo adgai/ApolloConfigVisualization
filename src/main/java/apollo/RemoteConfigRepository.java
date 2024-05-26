@@ -49,6 +49,7 @@ import com.google.common.escape.Escaper;
 import com.google.common.net.UrlEscapers;
 import com.google.common.util.concurrent.RateLimiter;
 import com.google.gson.Gson;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +59,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+
 import org.slf4j.Logger;
 
 /**
@@ -125,7 +127,7 @@ public class RemoteConfigRepository extends AbstractConfigRepository {
      *
      * @param namespace the namespace
      */
-    public RemoteConfigRepository(IConfigUtil configUtil,String namespace) {
+    public RemoteConfigRepository(IConfigUtil configUtil, String namespace) {
         m_namespace = namespace;
         m_configCache = new AtomicReference<>();
         m_configUtil = configUtil;
@@ -173,8 +175,11 @@ public class RemoteConfigRepository extends AbstractConfigRepository {
                         trySync();
                         Tracer.logEvent("Apollo.Client.Version", Apollo.VERSION);
                     }
-                }, m_configUtil.getRefreshInterval(), m_configUtil.getRefreshInterval(),
-                m_configUtil.getRefreshIntervalTimeUnit());
+                },
+                m_configUtil.getRefreshInterval(),
+                m_configUtil.getRefreshInterval(),
+                m_configUtil.getRefreshIntervalTimeUnit()
+        );
     }
 
     @Override
@@ -300,7 +305,7 @@ public class RemoteConfigRepository extends AbstractConfigRepository {
                     Tracer.logEvent("ApolloConfigException", ExceptionUtil.getDetailMessage(statusCodeException));
                     transaction.setStatus(statusCodeException);
                     exception = statusCodeException;
-                    if(ex.getStatusCode() == 404) {
+                    if (ex.getStatusCode() == 404) {
                         break retryLoopLabel;
                     }
                 } catch (Throwable ex) {

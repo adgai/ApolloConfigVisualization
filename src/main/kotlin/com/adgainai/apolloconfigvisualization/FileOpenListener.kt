@@ -1,5 +1,6 @@
 package com.adgainai.apolloconfigvisualization
 
+import com.adgainai.apolloconfigvisualization.config.ApolloViewConfiguration
 import com.intellij.lang.folding.FoldingDescriptor
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.impl.FoldRegionImpl
@@ -111,6 +112,16 @@ class FileOpenListener : FileEditorManagerListener {
     }
 
     override fun fileClosed(source: FileEditorManager, file: VirtualFile) {
+
+        val configuration = ApolloViewConfiguration.getInstance(
+            source.project
+        )
+
+        if (!configuration.foldingWhenEveryOpenFile) {
+            return
+        }
+
+
         super.fileClosed(source, file)
         val document = FileDocumentManager.getInstance().getDocument(file)
 
