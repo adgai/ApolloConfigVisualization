@@ -26,18 +26,18 @@ class FileOpenListener : FileEditorManagerListener {
 
     private val foldingBuilder: MyFoldingBuilder = MyFoldingBuilder()
 
-    //    override fun fileOpened(source: FileEditorManager, file: VirtualFile) {
-//        // 在文件打开时触发构建代码折叠区域的逻辑
-//        val project: Project? = source.project
-//        project?.let {
-//            // 获取文件的 PsiElement 根节点
-//            val psiFile: PsiFile? = PsiManager.getInstance(it).findFile(file)
-//            psiFile?.let { psiFile ->
-//                // 调用代码折叠逻辑
-//                buildFoldingDescriptors(psiFile, it)
-//            }
-//        }
-//    }
+        override fun fileOpened(source: FileEditorManager, file: VirtualFile) {
+        // 在文件打开时触发构建代码折叠区域的逻辑
+        val project: Project? = source.project
+        project?.let {
+            // 获取文件的 PsiElement 根节点
+            val psiFile: PsiFile? = PsiManager.getInstance(it).findFile(file)
+            psiFile?.let { psiFile ->
+                // 调用代码折叠逻辑
+                buildFoldingDescriptors(psiFile, it)
+            }
+        }
+    }
 //
 //    // 构建代码折叠区域的描述符的逻辑
 //    private fun buildFoldingDescriptors(psiFile: PsiFile, project: Project) {

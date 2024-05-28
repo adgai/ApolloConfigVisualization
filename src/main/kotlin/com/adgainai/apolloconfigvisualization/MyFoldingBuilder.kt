@@ -22,21 +22,37 @@ class MyFoldingBuilder : FoldingBuilderEx() {
         val descriptors = mutableListOf<FoldingDescriptor>()
         val root = node.psi
         val project = root.project
+        val configuration = ApolloViewConfiguration.getInstance(project)
 
-//        val settings = MyPluginProjectSettings.getInstance(project)
-//        var splitMethodSignatureList = settings.methodSignature.split(",").filter { s -> StringUtils.isNotBlank(s) }
-//        if (splitMethodSignatureList.size == 0) {
         var splitMethodSignatureList = arrayListOf(
             "configUtils.getBool",
             "configUtils.getBoolean",
-            "configHolder.getBool",
-            "configHolder.getBoolean",
             "configUtils.getInt",
             "configUtils.getLong",
             "configUtils.getInteger",
-        );
-//        }
+            "configUtils.getString",
 
+            "configHolder.getBool",
+            "configHolder.getBoolean",
+            "configHolder.getInt",
+            "configHolder.getLong",
+            "configHolder.getInteger",
+            "configHolder.getString",
+
+            "configManager.getBool",
+            "configManager.getBoolean",
+            "configManager.getInt",
+            "configManager.getLong",
+            "configManager.getInteger",
+            "configManager.getString",
+        );
+
+        if (StringUtils.isNotBlank(configuration.methodSignatures)) {
+            splitMethodSignatureList =
+                configuration.methodSignatures.split(",")
+                    .filter { s -> StringUtils.isNotBlank(s) }
+                    .toCollection(arrayListOf())
+        }
 
         // 使用递归访问者遍历 PSI 树查找方法调用
         root.accept(object : JavaRecursiveElementVisitor() {
@@ -84,7 +100,6 @@ class MyFoldingBuilder : FoldingBuilderEx() {
         val element = node.psi
 
         val project = element.project
-//        val settings = MyPluginProjectSettings.getInstance(project)
 
         if (element is PsiMethodCallExpression) {
             val methodCallExpression = element
@@ -95,44 +110,8 @@ class MyFoldingBuilder : FoldingBuilderEx() {
             val staticConstantValue = getStaticConstantValue(arguments[0])
             val defaultValue = getBooleanValue(arguments[1])
 
-//
-//            val token = settings.token
-//            val url = settings.url
-//            val serviceName = settings.serviceName
-
-//            val initialized = ::apolloClient.isInitialized
-//            if (!initialized) {
-//                apolloClient = ApolloOpenApiClient.newBuilder().withToken(token).withPortalUrl(url).build()
-//            }
-//
-//            var envList = settings.env.split(",").filter { s -> StringUtils.isNotBlank(s) }
-//            if (envList.size == 0) {
-//                envList = arrayListOf(
-//                    "ndev",
-//                    "qa",
-//                    "prod"
-//                );
-//            }
-
             var v = ""
-//            envList.forEach {
-//                var apolloValue =
-//                    apolloClient.getItem(
-//                        serviceName,
-//                        it,
-//                        "default",
-//                        "application",
-//                        staticConstantValue.toString()
-//                    )?.value
-//
-//
-//                if (apolloValue == null) {
-//                    apolloValue = defaultValue.toString()
-//                }
-//
-//                v += "$it:$apolloValue";
-//                v += " "
-//            }
+
             val configuration = ApolloViewConfiguration.getInstance(
                 project
             )

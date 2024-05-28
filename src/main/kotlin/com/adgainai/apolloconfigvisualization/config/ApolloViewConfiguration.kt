@@ -5,6 +5,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.project.Project
+import com.intellij.ui.components.JBTextField
 import com.intellij.util.xmlb.XmlSerializerUtil
 
 
@@ -21,6 +22,8 @@ class ApolloViewConfiguration : PersistentStateComponent<ApolloViewConfiguration
     var envToKeyToValue: MutableMap<String, MutableMap<String, String>> = mutableMapOf()
 
     var foldingWhenEveryOpenFile: Boolean = false
+
+     var methodSignatures : String  = ""
 
 
     override fun getState(): ApolloViewConfiguration? {

@@ -1,5 +1,6 @@
 package com.adgainai.apolloconfigvisualization.config
 
+import com.intellij.find.impl.JComboboxAction.Companion.emptyText
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
@@ -20,6 +21,7 @@ class ApolloViewConfigurable(private val project: Project) : Configurable {
     private var keyValueTable: JTable? = null
     private var cookieTextField: JTextField? = null
     private var foldingWhenEveryOpenFileRadioButton: JCheckBox? = null
+    private var methodSignatureTextField: JTextField? = null
 
     override fun getDisplayName(): @Nls(capitalization = Nls.Capitalization.Title) String? {
         return "My Plugin Configuration"
@@ -60,6 +62,11 @@ class ApolloViewConfigurable(private val project: Project) : Configurable {
             alignmentX = Component.LEFT_ALIGNMENT
         }
 
+        methodSignatureTextField = JTextField()
+        val panel = FormBuilder.createFormBuilder()
+            .addLabeledComponent(JBLabel("MethodSignatureField: "), methodSignatureTextField!!, 4, false)
+            .panel
+
         val addButton = JButton("+").apply {
             preferredSize = Dimension(30, 30)
             alignmentX = Component.LEFT_ALIGNMENT
@@ -97,6 +104,7 @@ class ApolloViewConfigurable(private val project: Project) : Configurable {
         // Add components to the main panel
         mainPanel!!.apply {
             add(foldingPanel)
+            add(panel)
 //            add(Box.createRigidArea(Dimension(0, 20)))  // Add vertical space of 30
             val panel = FormBuilder.createFormBuilder()
                 .addLabeledComponent(JBLabel("Cookie: "), cookieTextField!!, 4, false)
@@ -119,8 +127,9 @@ class ApolloViewConfigurable(private val project: Project) : Configurable {
         val isKeyValuesModified = storedKeyValues != currentKeyValues
         val isCookieModified = settings.cookie != (cookieTextField?.text ?: "")
         val isFoldingModified = settings.foldingWhenEveryOpenFile != foldingWhenEveryOpenFileRadioButton!!.isSelected
+        val isMethodSignatureModified = settings.methodSignatures != methodSignatureTextField?.text
 
-        return isKeyValuesModified || isCookieModified || isFoldingModified
+        return isKeyValuesModified || isCookieModified || isFoldingModified || isMethodSignatureModified
     }
 
     override fun apply() {
@@ -132,6 +141,8 @@ class ApolloViewConfigurable(private val project: Project) : Configurable {
 
         configuration.cookie = cookieTextField?.text ?: ""
         configuration.foldingWhenEveryOpenFile = foldingWhenEveryOpenFileRadioButton!!.isSelected
+        configuration.methodSignatures = methodSignatureTextField?.text ?: ""
+
     }
 
     override fun reset() {
@@ -143,6 +154,7 @@ class ApolloViewConfigurable(private val project: Project) : Configurable {
 
         cookieTextField?.text = configuration.cookie
         foldingWhenEveryOpenFileRadioButton!!.isSelected = configuration.foldingWhenEveryOpenFile
+        methodSignatureTextField?.text = configuration.methodSignatures
     }
 
     private val currentKeyValues: List<ApolloViewConfiguration.KeyValue>
