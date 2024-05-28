@@ -1,0 +1,1 @@
+This is a Intellij idea plugin for view apollo config in multi environment
