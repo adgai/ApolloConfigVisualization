@@ -3,7 +3,6 @@ package com.adgainai.apolloconfigvisualization
 import com.adgainai.apolloconfigvisualization.config.ApolloViewConfiguration
 import com.intellij.lang.folding.FoldingDescriptor
 import com.intellij.openapi.editor.Document
-import com.intellij.openapi.editor.impl.FoldRegionImpl
 import com.intellij.openapi.editor.impl.FoldingModelImpl
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -11,12 +10,10 @@ import com.intellij.openapi.fileEditor.FileEditorManagerListener
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.platform.ide.progress.ModalTaskOwner.project
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.util.keyFMap.KeyFMap
-import java.lang.reflect.Method
 import java.util.concurrent.atomic.AtomicReference
 
 
@@ -113,9 +110,6 @@ class FileOpenListener : FileEditorManagerListener {
             foldingModel.runBatchFoldingOperation {
                 for (foldRegion in foldingModel.allFoldRegions) {
                     val text = document.getText(foldRegion.textRange)
-//                    if (!text.startsWith("configUtils")) {
-//                        continue
-//                    }
 
                     val none = foldingMethodCallExpress.all { !text.startsWith(it) }
                     if (none){
@@ -123,8 +117,10 @@ class FileOpenListener : FileEditorManagerListener {
                     }
 
                     psiFile.putUserData(Key.create("editor.BeforeCodeFoldingPass"), false)
-                    val foldRegionImpl = foldRegion as FoldRegionImpl
-                    foldRegionImpl.setExpanded(false)
+//                    val foldRegionImpl = foldRegion as FoldRegionImpl
+//                    foldRegionImpl.setExpanded(false)
+
+                    foldRegion.isExpanded  =false
                     val m = FoldingModelImpl::class.java.declaredMethods.first { it.name == "collapseFoldRegion" }
                     m.trySetAccessible()
                     m.invoke(foldingModel, foldRegion, false)
