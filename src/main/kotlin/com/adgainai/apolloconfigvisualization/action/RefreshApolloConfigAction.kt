@@ -5,17 +5,46 @@ import apollo.NamespaceBO
 import com.adgainai.apolloconfigvisualization.config.ApolloViewConfiguration
 import com.alibaba.fastjson2.JSON
 import com.alibaba.fastjson2.TypeReference
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
-import okhttp3.OkHttpClient
-import okhttp3.Request
+import okhttp3.*
 import org.apache.commons.collections.CollectionUtils
+import org.apache.commons.lang3.StringUtils
+import java.util.Arrays
+
 
 class RefreshApolloConfigAction : AnAction("refresh Apollo Config Visualization") {
     private var lastClickTime: Long = 0
+    val cookieJar = LocalCookieJar()
 
+    val client = OkHttpClient().newBuilder()
+        .followRedirects(false) //禁制OkHttp的重定向操作，我们自己处理重定向
+        .followSslRedirects(false)
+        .cookieJar(cookieJar) //为OkHttp设置自动携带Cookie的功能
+        .build();
+
+    //CookieJar是用于保存Cookie的
+    class LocalCookieJar : CookieJar {
+        var cookies: List<Cookie>? = null
+
+        override fun loadForRequest(arg0: HttpUrl): List<Cookie> {
+            if (cookies != null) return cookies as List<Cookie>
+            return ArrayList()
+        }
+
+        override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
+            this.cookies = cookies;
+        }
+
+
+    }
+
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.BGT
+    }
     override fun actionPerformed(event: AnActionEvent) {
 //        val currentTime = System.currentTimeMillis()
 //        if (currentTime - lastClickTime < 5000) {
@@ -45,8 +74,32 @@ class RefreshApolloConfigAction : AnAction("refresh Apollo Config Visualization"
 //            Messages.getInformationIcon()
 //        )
 
+      loginAndGetCookie(configuration.loginUrl,configuration.account,configuration.password)
 
         sendGetRequestWithOkHttp(configuration, project)
+
+    }
+
+    private fun loginAndGetCookie(loginUrl: String, username: String, password: String){
+        if (StringUtils.isBlank(loginUrl) || StringUtils.isBlank(username) || StringUtils.isBlank(password)) {
+            return
+        }
+         try {
+
+            val formBody = FormBody.Builder()
+                .add("username", username)
+                .add("password", password)
+                .build()
+
+            val request = Request.Builder()
+                .url(loginUrl)
+                .post(formBody)
+                .build()
+
+            client.newCall(request).execute()
+
+        } catch (_: Exception) {
+        }
 
     }
 
@@ -56,15 +109,22 @@ class RefreshApolloConfigAction : AnAction("refresh Apollo Config Visualization"
     }
 
     fun sendGetRequestWithOkHttp(config: ApolloViewConfiguration, project: Project) {
-        val client = OkHttpClient()
+
         var envToKeyToValue: MutableMap<String, MutableMap<String, String>> = mutableMapOf()
 
         config.keyValues.forEach { kv ->
             val env = kv.key
             val url = kv.value
-            val request = Request.Builder()
-                .header("Cookie", config.cookie)
+            val builder = Request.Builder()
+//                .header("Cookie",cookie)
                 .url(url.toString())
+            val configuration = ApolloViewConfiguration.getInstance(project)
+
+            if (StringUtils.isNotBlank(configuration.cookie)) {
+                builder.header("Cookie",configuration.cookie)
+            }
+
+            val request = builder
                 .build()
 
             client.newCall(request).execute().use { response ->

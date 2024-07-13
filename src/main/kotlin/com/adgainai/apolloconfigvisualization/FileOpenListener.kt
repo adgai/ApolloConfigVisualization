@@ -26,7 +26,15 @@ class FileOpenListener : FileEditorManagerListener {
 
     private val foldingBuilder: MyFoldingBuilder = MyFoldingBuilder()
 
-        override fun fileOpened(source: FileEditorManager, file: VirtualFile) {
+    override fun fileOpened(source: FileEditorManager, file: VirtualFile) {
+
+        val configuration = ApolloViewConfiguration.getInstance(
+            source.project
+        )
+
+           if (!configuration.foldingWhenEveryOpenFile) {
+            return
+        }
         // 在文件打开时触发构建代码折叠区域的逻辑
         val project: Project? = source.project
         project?.let {
@@ -34,11 +42,15 @@ class FileOpenListener : FileEditorManagerListener {
             val psiFile: PsiFile? = PsiManager.getInstance(it).findFile(file)
             psiFile?.let { psiFile ->
                 // 调用代码折叠逻辑
-                buildFoldingDescriptors(psiFile, it)
+                try {
+                    buildFoldingDescriptors(psiFile, it)
+                } catch (_: Exception) {
+                }
             }
         }
     }
-//
+
+    //
 //    // 构建代码折叠区域的描述符的逻辑
 //    private fun buildFoldingDescriptors(psiFile: PsiFile, project: Project) {
 //        // 获取文件的 Document 对象
@@ -83,6 +95,11 @@ class FileOpenListener : FileEditorManagerListener {
 
     // 构建代码折叠区域的描述符的逻辑
     private fun buildFoldingDescriptors(psiFile: PsiFile, project: Project) {
+        val configuration = ApolloViewConfiguration.getInstance(
+            project
+        )
+        val foldingMethodCallExpress = configuration.getFoldingMethodCallExpress()
+
         // 获取文件的 Document 对象
         val document: Document? = PsiDocumentManager.getInstance(project).getDocument(psiFile)
         document?.let { document ->
@@ -96,7 +113,12 @@ class FileOpenListener : FileEditorManagerListener {
             foldingModel.runBatchFoldingOperation {
                 for (foldRegion in foldingModel.allFoldRegions) {
                     val text = document.getText(foldRegion.textRange)
-                    if (!text.startsWith("configUtils")) {
+//                    if (!text.startsWith("configUtils")) {
+//                        continue
+//                    }
+
+                    val none = foldingMethodCallExpress.all { !text.startsWith(it) }
+                    if (none){
                         continue
                     }
 

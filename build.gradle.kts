@@ -4,8 +4,8 @@ plugins {
     id("org.jetbrains.intellij") version "1.16.1"
 }
 
-group = "com.example"
-version = "1.0-SNAPSHOT"
+group = "im.codeman"
+version = "1.0-release"
 
 repositories {
     mavenCentral()
@@ -14,7 +14,7 @@ repositories {
 // Configure Gradle IntelliJ Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
-    version.set("2024.1.1")
+    version.set("2024.1.4")
     type.set("IU") // Target IDE Platform
     plugins.set(listOf("com.intellij.java","java"))
 }
@@ -45,8 +45,6 @@ tasks {
     }
 }
 dependencies{
-    implementation("com.ctrip.framework.apollo:apollo-openapi:2.2.0")
-    implementation("com.ctrip.framework.apollo:apollo-client:2.2.0")
     implementation("com.squareup.okhttp3:okhttp:4.9.2")
 //    implementation("com.ctrip.framework.apollo:apollo:2.2.0")
     implementation ("com.alibaba.fastjson2:fastjson2:2.0.50")

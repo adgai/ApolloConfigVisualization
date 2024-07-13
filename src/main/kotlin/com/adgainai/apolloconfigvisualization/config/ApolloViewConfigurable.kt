@@ -1,19 +1,18 @@
 package com.adgainai.apolloconfigvisualization.config
 
-import com.intellij.find.impl.JComboboxAction.Companion.emptyText
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.FormBuilder
-import com.intellij.util.ui.JBUI
-import org.jetbrains.annotations.Nls
+import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Dimension
-import java.awt.event.ActionEvent
 import javax.swing.*
+import javax.swing.border.TitledBorder
 import javax.swing.table.DefaultTableCellRenderer
 import javax.swing.table.DefaultTableModel
+
 
 class ApolloViewConfigurable(private val project: Project) : Configurable {
     private var mainPanel: JPanel? = null
@@ -21,32 +20,84 @@ class ApolloViewConfigurable(private val project: Project) : Configurable {
     private var keyValueTable: JTable? = null
     private var cookieTextField: JTextField? = null
     private var foldingWhenEveryOpenFileRadioButton: JCheckBox? = null
-    private var methodSignatureTextField: JTextField? = null
+    private var methodSignatureTextField: JTextArea? = null
 
-    override fun getDisplayName(): @Nls(capitalization = Nls.Capitalization.Title) String? {
+    // 新增登录网址、账号和密码输入框变量
+    private var loginUrlTextField: JTextField? = null
+    private var accountTextField: JTextField? = null
+    private var passwordField: JPasswordField? = null
+
+
+    public fun createTitledSeparator(title: String): JComponent {
+        val panel = JPanel( BorderLayout())
+        panel.alignmentY= Component.CENTER_ALIGNMENT
+
+
+        val label: JLabel = JLabel(title)
+        val separator = JSeparator(JSeparator.HORIZONTAL)
+
+
+        // 设置分割线的尺寸
+        separator.preferredSize = Dimension(separator.preferredSize.width, 1)
+
+
+        // 创建一个垂直布局的盒子
+        val verticalBox = Box.createVerticalBox()
+        verticalBox.add(Box.createVerticalStrut(10))
+        verticalBox.add(separator)
+        verticalBox.add(Box.createVerticalStrut(10))
+
+
+        // 将标签和盒子添加到面板中
+        panel.add(label, BorderLayout.WEST)
+        panel.add(verticalBox, BorderLayout.CENTER)
+
+        return panel
+    }
+
+    override fun getDisplayName(): String {
         return "My Plugin Configuration"
     }
 
     override fun createComponent(): JComponent? {
-        mainPanel = JPanel()
-            .apply {
-                layout = BoxLayout(this, BoxLayout.Y_AXIS)
-                alignmentX = Component.LEFT_ALIGNMENT
-            }
+        mainPanel = JPanel().apply {
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+            alignmentX = Component.LEFT_ALIGNMENT
+        }
 
-        foldingWhenEveryOpenFileRadioButton = JCheckBox("是否每次重新打开文件都折叠所有可以折叠的代码")
-            .apply {
-                alignmentX = Component.LEFT_ALIGNMENT
-            }
+        foldingWhenEveryOpenFileRadioButton = JCheckBox("是否每次重新打开文件都折叠所有可以折叠的代码").apply {
+            alignmentX = Component.LEFT_ALIGNMENT
+        }
 
-        // Define the cookie input field
+        // 定义登录网址输入框
+        loginUrlTextField = JTextField().apply {
+            preferredSize = Dimension(400, 30)
+            toolTipText = "Enter the login URL here"
+            alignmentX = Component.LEFT_ALIGNMENT
+        }
+
+        // 定义账号输入框
+        accountTextField = JTextField().apply {
+            preferredSize = Dimension(400, 30)
+            toolTipText = "Enter your account here"
+            alignmentX = Component.LEFT_ALIGNMENT
+        }
+
+        // 定义密码输入框
+        passwordField = JPasswordField().apply {
+            preferredSize = Dimension(400, 30)
+            toolTipText = "Enter your password here"
+            alignmentX = Component.LEFT_ALIGNMENT
+        }
+
+        // 定义Cookie输入框
         cookieTextField = JTextField().apply {
             preferredSize = Dimension(400, 30)
             toolTipText = "Enter your cookie here"
             alignmentX = Component.LEFT_ALIGNMENT
         }
 
-        // Define table model with two columns: Key and Value
+        // 定义带有两列的表模型：Key和Value
         tableModel = DefaultTableModel(arrayOf("env", "curl"), 0)
 
         keyValueTable = JTable(tableModel).apply {
@@ -61,11 +112,6 @@ class ApolloViewConfigurable(private val project: Project) : Configurable {
             preferredSize = Dimension(400, 200)
             alignmentX = Component.LEFT_ALIGNMENT
         }
-
-        methodSignatureTextField = JTextField()
-        val panel = FormBuilder.createFormBuilder()
-            .addLabeledComponent(JBLabel("MethodSignatureField: "), methodSignatureTextField!!, 4, false)
-            .panel
 
         val addButton = JButton("+").apply {
             preferredSize = Dimension(30, 30)
@@ -86,12 +132,12 @@ class ApolloViewConfigurable(private val project: Project) : Configurable {
             }
         }
 
-        // Create a panel for the buttons and set its layout
+        // 创建按钮面板并设置其布局
         val buttonPanel = JPanel().apply {
             layout = BoxLayout(this, BoxLayout.X_AXIS)
             alignmentX = Component.LEFT_ALIGNMENT
             add(addButton)
-            add(Box.createRigidArea(Dimension(10, 0)))  // Add some space between buttons
+            add(Box.createRigidArea(Dimension(10, 0)))  // 添加按钮之间的空白
             add(removeButton)
         }
 
@@ -101,21 +147,67 @@ class ApolloViewConfigurable(private val project: Project) : Configurable {
             add(foldingWhenEveryOpenFileRadioButton)
         }
 
-        // Add components to the main panel
+
+        // 创建一个 JFram("")
+        val foldingSetting = createTitledSeparator("折叠设置")
+        val getCookieSetting = createTitledSeparator("获取cookie，输入账号密码登录网址或者直接填入cookie,两种方式二选一")
+        val getEnv = createTitledSeparator("获取哪些环境的配置，以及对应环境的url")
+        val foldingMethodSignatureJSeparator = createTitledSeparator("需要折叠的方法的签名类似：configUtils.getInteger,逗号分割")
+
+        // 将组件添加到主面板
         mainPanel!!.apply {
+
+            add(foldingSetting)
             add(foldingPanel)
-            add(panel)
-//            add(Box.createRigidArea(Dimension(0, 20)))  // Add vertical space of 30
-            val panel = FormBuilder.createFormBuilder()
+
+            add(getCookieSetting)
+            // 添加登录网址、账号和密码输入框
+            val loginUrlPanel = FormBuilder.createFormBuilder()
+                .addLabeledComponent(JBLabel("Login URL: "), loginUrlTextField!!, 4, false)
+                .panel.also {
+                    it.alignmentX = Component.LEFT_ALIGNMENT
+                }
+            add(loginUrlPanel)
+
+            val accountPanel = FormBuilder.createFormBuilder()
+                .addLabeledComponent(JBLabel("Account: "), accountTextField!!, 4, false)
+                .panel.also {
+                    it.alignmentX = Component.LEFT_ALIGNMENT
+                }
+            add(accountPanel)
+
+            val passwordPanel = FormBuilder.createFormBuilder()
+                .addLabeledComponent(JBLabel("Password: "), passwordField!!, 4, false)
+                .panel.also {
+                    it.alignmentX = Component.LEFT_ALIGNMENT
+                }
+            add(passwordPanel)
+
+            val cookiePanel = FormBuilder.createFormBuilder()
                 .addLabeledComponent(JBLabel("Cookie: "), cookieTextField!!, 4, false)
                 .panel.also {
                     it.alignmentX = Component.LEFT_ALIGNMENT
                 }
-            add(panel)
-//            add(Box.createRigidArea(Dimension(0, 20)))  // Add vertical space of 30
+            add(cookiePanel)
+
+            add(getEnv)
             add(buttonPanel)
-//            add(Box.createRigidArea(Dimension(0, 20)))  // Add vertical space of 30
             add(scrollPane)
+
+            // 添加MethodSignature输入框
+            methodSignatureTextField = JTextArea().apply {
+                lineWrap = true
+                wrapStyleWord = true
+                preferredSize = Dimension(400, 100)
+            }
+
+            add(foldingMethodSignatureJSeparator)
+            val methodSignaturePanel = FormBuilder.createFormBuilder()
+                .addLabeledComponent(JBLabel(""), JScrollPane(methodSignatureTextField!!), 4, false)
+                .panel.also {
+                    it.alignmentX = Component.LEFT_ALIGNMENT
+                }
+            add(methodSignaturePanel)
         }
 
         return mainPanel
@@ -128,8 +220,11 @@ class ApolloViewConfigurable(private val project: Project) : Configurable {
         val isCookieModified = settings.cookie != (cookieTextField?.text ?: "")
         val isFoldingModified = settings.foldingWhenEveryOpenFile != foldingWhenEveryOpenFileRadioButton!!.isSelected
         val isMethodSignatureModified = settings.methodSignatures != methodSignatureTextField?.text
+        val isAccountModified = settings.account != (accountTextField?.text ?: "")
+        val isPasswordModified = settings.password != String(passwordField?.password ?: CharArray(0))
+        val isLoginUrlModified = settings.loginUrl != (loginUrlTextField?.text ?: "")
 
-        return isKeyValuesModified || isCookieModified || isFoldingModified || isMethodSignatureModified
+        return isKeyValuesModified || isCookieModified || isFoldingModified || isMethodSignatureModified || isAccountModified || isPasswordModified || isLoginUrlModified
     }
 
     override fun apply() {
@@ -142,11 +237,13 @@ class ApolloViewConfigurable(private val project: Project) : Configurable {
         configuration.cookie = cookieTextField?.text ?: ""
         configuration.foldingWhenEveryOpenFile = foldingWhenEveryOpenFileRadioButton!!.isSelected
         configuration.methodSignatures = methodSignatureTextField?.text ?: ""
-
+        configuration.account = accountTextField?.text ?: ""
+        configuration.password = String(passwordField?.password ?: CharArray(0))
+        configuration.loginUrl = loginUrlTextField?.text ?: ""
     }
 
     override fun reset() {
-        tableModel!!.rowCount = 0 // Clear the table
+        tableModel!!.rowCount = 0 // 清空表格
         val configuration = ApolloViewConfiguration.getInstance(project)
         configuration.keyValues.forEach { keyValue ->
             tableModel!!.addRow(arrayOf<Any?>(keyValue.key, keyValue.value))
@@ -155,6 +252,9 @@ class ApolloViewConfigurable(private val project: Project) : Configurable {
         cookieTextField?.text = configuration.cookie
         foldingWhenEveryOpenFileRadioButton!!.isSelected = configuration.foldingWhenEveryOpenFile
         methodSignatureTextField?.text = configuration.methodSignatures
+        accountTextField?.text = configuration.account
+        passwordField?.text = configuration.password
+        loginUrlTextField?.text = configuration.loginUrl
     }
 
     private val currentKeyValues: List<ApolloViewConfiguration.KeyValue>

@@ -7,6 +7,7 @@ import com.intellij.openapi.components.Storage
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBTextField
 import com.intellij.util.xmlb.XmlSerializerUtil
+import org.apache.commons.lang3.StringUtils
 
 
 @Service(Service.Level.PROJECT)
@@ -24,6 +25,9 @@ class ApolloViewConfiguration : PersistentStateComponent<ApolloViewConfiguration
     var foldingWhenEveryOpenFile: Boolean = false
 
      var methodSignatures : String  = ""
+    var account : String  = ""
+    var password : String  = ""
+    var loginUrl : String  = ""
 
 
     override fun getState(): ApolloViewConfiguration? {
@@ -54,4 +58,48 @@ class ApolloViewConfiguration : PersistentStateComponent<ApolloViewConfiguration
         var key: String? = null
         var value: String? = null
     }
+
+    fun getFoldingMethodCallExpress(): List<String> {
+     return  getFoldingMethodSignuture().map { it->it.split(".")[0] }.distinct().toList()
+    }
+
+    fun getFoldingMethodSignuture():ArrayList<String>{
+
+        var splitMethodSignatureList =ArrayList<String>()
+
+        if (StringUtils.isNotBlank(methodSignatures)) {
+            splitMethodSignatureList =
+                methodSignatures.split(",")
+                    .filter { s -> StringUtils.isNotBlank(s) }
+                    .toCollection(arrayListOf())
+            return splitMethodSignatureList
+        }
+
+         splitMethodSignatureList = arrayListOf(
+            "configUtils.getBool",
+            "configUtils.getBoolean",
+            "configUtils.getInt",
+            "configUtils.getLong",
+            "configUtils.getInteger",
+            "configUtils.getString",
+
+            "configHolder.getBool",
+            "configHolder.getBoolean",
+            "configHolder.getInt",
+            "configHolder.getLong",
+            "configHolder.getInteger",
+            "configHolder.getString",
+
+            "configManager.getBool",
+            "configManager.getBoolean",
+            "configManager.getInt",
+            "configManager.getLong",
+            "configManager.getInteger",
+            "configManager.getString",
+        );
+
+        return splitMethodSignatureList
+
+    }
+
 }

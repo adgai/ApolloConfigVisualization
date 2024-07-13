@@ -1,7 +1,6 @@
 package com.adgainai.apolloconfigvisualization
 
 import com.adgainai.apolloconfigvisualization.config.ApolloViewConfiguration
-import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient
 import com.intellij.lang.ASTNode
 import com.intellij.lang.folding.FoldingBuilderEx
 import com.intellij.lang.folding.FoldingDescriptor
@@ -13,7 +12,6 @@ import org.apache.commons.lang3.StringUtils
 
 class MyFoldingBuilder : FoldingBuilderEx() {
 
-    lateinit var apolloClient: ApolloOpenApiClient
     override fun buildFoldRegions(p0: PsiElement, p1: Document, p2: Boolean): Array<FoldingDescriptor> {
         return buildFoldRegions(p0.node, p1);
     }
@@ -24,35 +22,7 @@ class MyFoldingBuilder : FoldingBuilderEx() {
         val project = root.project
         val configuration = ApolloViewConfiguration.getInstance(project)
 
-        var splitMethodSignatureList = arrayListOf(
-            "configUtils.getBool",
-            "configUtils.getBoolean",
-            "configUtils.getInt",
-            "configUtils.getLong",
-            "configUtils.getInteger",
-            "configUtils.getString",
-
-            "configHolder.getBool",
-            "configHolder.getBoolean",
-            "configHolder.getInt",
-            "configHolder.getLong",
-            "configHolder.getInteger",
-            "configHolder.getString",
-
-            "configManager.getBool",
-            "configManager.getBoolean",
-            "configManager.getInt",
-            "configManager.getLong",
-            "configManager.getInteger",
-            "configManager.getString",
-        );
-
-        if (StringUtils.isNotBlank(configuration.methodSignatures)) {
-            splitMethodSignatureList =
-                configuration.methodSignatures.split(",")
-                    .filter { s -> StringUtils.isNotBlank(s) }
-                    .toCollection(arrayListOf())
-        }
+        val splitMethodSignatureList = configuration.getFoldingMethodSignuture()
 
         // 使用递归访问者遍历 PSI 树查找方法调用
         root.accept(object : JavaRecursiveElementVisitor() {
@@ -76,11 +46,6 @@ class MyFoldingBuilder : FoldingBuilderEx() {
                     )
                     descriptors.add(element)
                 }
-
-//                val qualifiedName = expression.resolveMethod()?.containingClass?.qualifiedName
-//                if (){
-//
-//                }
 
             }
         })
@@ -128,17 +93,7 @@ class MyFoldingBuilder : FoldingBuilderEx() {
                 v += ";"
 
             }
-//            envToKeyToValue.entries.forEach { kv ->
-//                {
-//                    val env = kv.key
-//                    val kvmap = kv.value
-//                    v += env
-//                    v += ','
-//                    v += kvmap.getOrDefault(staticConstantValue.toString(), defaultValue = defaultValue.toString())
-//
-//                }
-//
-//            }
+
 
             return v
         }
@@ -171,6 +126,8 @@ class MyFoldingBuilder : FoldingBuilderEx() {
             val value = ele.value
 
             return value
+        }else if (ele is PsiBinaryExpression){
+            return (ele as PsiBinaryExpression).text
         }
 
         return null
