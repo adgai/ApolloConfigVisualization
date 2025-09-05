@@ -3,13 +3,12 @@ package com.adgainai.apolloconfigvisualization.config
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
-import com.intellij.ui.components.JBLabel
+import com.intellij.ui.TitledSeparator
 import com.intellij.util.ui.FormBuilder
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Dimension
 import javax.swing.*
-import javax.swing.border.TitledBorder
 import javax.swing.table.DefaultTableCellRenderer
 import javax.swing.table.DefaultTableModel
 
@@ -27,8 +26,8 @@ class ApolloViewConfigurable(private val project: Project) : Configurable {
     private var passwordField: JPasswordField? = null
 
     public fun createTitledSeparator(title: String): JComponent {
-        val panel = JPanel( BorderLayout())
-        panel.alignmentY= Component.CENTER_ALIGNMENT
+        val panel = JPanel(BorderLayout())
+        panel.alignmentY = Component.CENTER_ALIGNMENT
 
 
         val label: JLabel = JLabel(title)
@@ -55,142 +54,118 @@ class ApolloViewConfigurable(private val project: Project) : Configurable {
         return "My Plugin Configuration"
     }
 
+
     override fun createComponent(): JComponent? {
-        mainPanel = JPanel().apply {
-            layout = BoxLayout(this, BoxLayout.Y_AXIS)
-            alignmentX = Component.LEFT_ALIGNMENT
-        }
-
+        // 初始化输入组件
         foldingWhenEveryOpenFileRadioButton = JCheckBox("是否每次重新打开文件都折叠所有可以折叠的代码").apply {
-            alignmentX = Component.LEFT_ALIGNMENT
+            border = BorderFactory.createEmptyBorder(0, 100, 0, 0) // 左边缩进20px
         }
 
-        // 定义账号输入框
         accountTextField = JTextField().apply {
             preferredSize = Dimension(400, 30)
+            maximumSize = Dimension(Short.MAX_VALUE.toInt(), 30)
             toolTipText = "Enter your account here"
-            alignmentX = Component.LEFT_ALIGNMENT
+            border = BorderFactory.createEmptyBorder(0, 100, 0, 0) // 向右100px
         }
 
-        // 定义密码输入框
         passwordField = JPasswordField().apply {
             preferredSize = Dimension(400, 30)
+            maximumSize = Dimension(Short.MAX_VALUE.toInt(), 30)
             toolTipText = "Enter your password here"
-            alignmentX = Component.LEFT_ALIGNMENT
+            border = BorderFactory.createEmptyBorder(0, 100, 0, 0) // 向右100px
         }
 
-        // 定义Cookie输入框
         cookieTextField = JTextField().apply {
             preferredSize = Dimension(400, 30)
+            maximumSize = Dimension(Short.MAX_VALUE.toInt(), 30)
             toolTipText = "Enter your cookie here"
-            alignmentX = Component.LEFT_ALIGNMENT
+            border = BorderFactory.createEmptyBorder(0, 100, 0, 0) // 向右100px
         }
 
-        // 定义带有两列的表模型：Key和Value
+        // 表格
         tableModel = DefaultTableModel(arrayOf("env", "curl"), 0)
-
         keyValueTable = JTable(tableModel).apply {
             setDefaultRenderer(Any::class.java, CustomTableCellRenderer())
             tableHeader.background = JBColor.LIGHT_GRAY
             rowHeight = 25
             fillsViewportHeight = true
-            alignmentX = Component.LEFT_ALIGNMENT
         }
 
+        // 限制表格最大高度 200px
         val scrollPane = JScrollPane(keyValueTable).apply {
-            preferredSize = Dimension(400, 200)
-            alignmentX = Component.LEFT_ALIGNMENT
+            preferredSize = Dimension(400, 120)
+            maximumSize = Dimension(Short.MAX_VALUE.toInt(), 200)
+            border = BorderFactory.createEmptyBorder(0, 100, 0, 0)
         }
 
         val addButton = JButton("+").apply {
             preferredSize = Dimension(30, 30)
-            alignmentX = Component.LEFT_ALIGNMENT
-            addActionListener {
-                tableModel!!.addRow(arrayOf("", ""))
-            }
+            addActionListener { tableModel!!.addRow(arrayOf("", "")) }
         }
-
         val removeButton = JButton("-").apply {
             preferredSize = Dimension(30, 30)
-            alignmentX = Component.LEFT_ALIGNMENT
             addActionListener {
                 val selectedRow = keyValueTable!!.selectedRow
-                if (selectedRow != -1) {
-                    tableModel!!.removeRow(selectedRow)
-                }
+                if (selectedRow != -1) tableModel!!.removeRow(selectedRow)
             }
         }
-
-        // 创建按钮面板并设置其布局
         val buttonPanel = JPanel().apply {
             layout = BoxLayout(this, BoxLayout.X_AXIS)
-            alignmentX = Component.LEFT_ALIGNMENT
+            add(Box.createRigidArea(Dimension(20, 0))) // 左边缩进20px
             add(addButton)
-            add(Box.createRigidArea(Dimension(10, 0)))  // 添加按钮之间的空白
+            add(Box.createRigidArea(Dimension(10, 0)))
             add(removeButton)
+            border = BorderFactory.createEmptyBorder(0, 100, 0, 0)
         }
 
-        val foldingPanel = JPanel().apply {
-            layout = BoxLayout(this, BoxLayout.X_AXIS)
-            alignmentX = Component.LEFT_ALIGNMENT
-            add(foldingWhenEveryOpenFileRadioButton)
+        // MethodSignature 输入框
+        methodSignatureTextField = JTextArea().apply {
+            lineWrap = true
+            wrapStyleWord = true
+            preferredSize = Dimension(400, 100)
+            maximumSize = Dimension(Short.MAX_VALUE.toInt(), 100)
+        }
+        val methodSignatureScroll = JScrollPane(methodSignatureTextField!!).apply {
+            border = BorderFactory.createEmptyBorder(0, 100, 0, 0)
         }
 
+        // 创建账号/密码/Cookie 的统一 Panel
+        val accountPanel = JPanel().apply {
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+            border = BorderFactory.createEmptyBorder(0, 100, 0, 0) // 整体向右100px
+            add(FormBuilder.createFormBuilder().addLabeledComponent("Account:", accountTextField!!).panel)
+            add(Box.createVerticalStrut(5))
+            add(FormBuilder.createFormBuilder().addLabeledComponent("Password:", passwordField!!).panel)
+            add(Box.createVerticalStrut(5))
+            add(FormBuilder.createFormBuilder().addLabeledComponent("Cookie:", cookieTextField!!).panel)
+        }
 
-        // 创建一个 JFram("")
-        val foldingSetting = createTitledSeparator("折叠设置")
-        val getCookieSetting = createTitledSeparator("获取cookie，输入账号密码或者直接填入cookie,两种方式二选一")
-        val getEnv = createTitledSeparator("获取哪些环境的配置，以及对应环境的url")
-        val foldingMethodSignatureJSeparator = createTitledSeparator("需要折叠的方法的签名类似：configUtils.getInteger,逗号分割")
+        // 用 FormBuilder 构建主界面
+        val formBuilder = FormBuilder.createFormBuilder()
+            .setAlignLabelOnRight(true)
+            .setHorizontalGap(20)
 
-        // 将组件添加到主面板
-        mainPanel!!.apply {
+            // 折叠设置
+            .addComponent(TitledSeparator("折叠设置"))
+            .addComponent(foldingWhenEveryOpenFileRadioButton!!)
 
-            add(foldingSetting)
-            add(foldingPanel)
+            // 登录方式 / Cookie
+            .addComponent(TitledSeparator("获取 cookie：输入账号密码 或者 直接填入 cookie，二选一"))
+            .addComponent(accountPanel)
 
-            add(getCookieSetting)
+            // 环境配置
+            .addComponent(TitledSeparator("获取哪些环境的配置，以及对应环境的 url"))
+            .addComponent(buttonPanel)
+            .addComponentFillVertically(scrollPane, 5)
 
-            // 添加账号和密码输入框
-            val accountPanel = FormBuilder.createFormBuilder()
-                .addLabeledComponent(JBLabel("Account: "), accountTextField!!, 4, false)
-                .panel.also {
-                    it.alignmentX = Component.LEFT_ALIGNMENT
-                }
-            add(accountPanel)
+            // 方法签名配置
+            .addComponent(TitledSeparator("需要折叠的方法签名 (例如: configUtils.getInteger)，逗号分割"))
+            .addComponent(methodSignatureScroll)
 
-            val passwordPanel = FormBuilder.createFormBuilder()
-                .addLabeledComponent(JBLabel("Password: "), passwordField!!, 4, false)
-                .panel.also {
-                    it.alignmentX = Component.LEFT_ALIGNMENT
-                }
-            add(passwordPanel)
-
-            val cookiePanel = FormBuilder.createFormBuilder()
-                .addLabeledComponent(JBLabel("Cookie: "), cookieTextField!!, 4, false)
-                .panel.also {
-                    it.alignmentX = Component.LEFT_ALIGNMENT
-                }
-            add(cookiePanel)
-
-            add(getEnv)
-            add(buttonPanel)
-            add(scrollPane)
-
-            // 添加MethodSignature输入框
-            methodSignatureTextField = JTextArea().apply {
-                lineWrap = true
-                wrapStyleWord = true
-                preferredSize = Dimension(400, 100)
-            }
-
-            add(foldingMethodSignatureJSeparator)
-            val methodSignaturePanel = FormBuilder.createFormBuilder()
-                .addLabeledComponent(JBLabel(""), JScrollPane(methodSignatureTextField!!), 4, false)
-                .panel.also {
-                    it.alignmentX = Component.LEFT_ALIGNMENT
-                }
-            add(methodSignaturePanel)
+        // 给整体面板加 padding
+        mainPanel = JPanel(BorderLayout()).apply {
+            border = BorderFactory.createEmptyBorder(0, 40, 0, 0) // 整体左缩进40px
+            add(formBuilder.panel, BorderLayout.CENTER)
         }
 
         return mainPanel

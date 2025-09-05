@@ -48,10 +48,31 @@
                 text="ApolloConfigRefresh"
                 icon="icons/refresh.svg">
             >
-            <add-to-group group-id="MainToolbarCenter"  anchor="first"/>
+            <add-to-group group-id="MainToolbarCenter" anchor="first"/>
         </action>
     </actions>
     <change-notes>
+
+        <![CDATA[
+        <h2>1.0-4<h2>
+        <ul>
+        <li>
+       support multi env diff host
+        </li>
+
+        <li>
+        opt apollo config value display
+        </li>
+
+        <li>
+         opt  config  display
+
+        </li>
+
+
+        </ul>
+        ]]>
+
         <![CDATA[
         <h2>1.0-release<h2>
         <ul>
