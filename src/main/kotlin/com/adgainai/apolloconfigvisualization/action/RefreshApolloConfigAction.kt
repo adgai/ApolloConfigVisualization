@@ -45,6 +45,7 @@ class RefreshApolloConfigAction : AnAction("refresh Apollo Config Visualization"
     override fun getActionUpdateThread(): ActionUpdateThread {
         return ActionUpdateThread.BGT
     }
+
     override fun actionPerformed(event: AnActionEvent) {
 //        val currentTime = System.currentTimeMillis()
 //        if (currentTime - lastClickTime < 5000) {
@@ -74,17 +75,17 @@ class RefreshApolloConfigAction : AnAction("refresh Apollo Config Visualization"
 //            Messages.getInformationIcon()
 //        )
 
-      loginAndGetCookie(configuration.loginUrl,configuration.account,configuration.password)
+        loginAndGetCookie(configuration.loginUrl, configuration.account, configuration.password)
 
         sendGetRequestWithOkHttp(configuration, project)
 
     }
 
-    private fun loginAndGetCookie(loginUrl: String, username: String, password: String){
+    private fun loginAndGetCookie(loginUrl: String, username: String, password: String) {
         if (StringUtils.isBlank(loginUrl) || StringUtils.isBlank(username) || StringUtils.isBlank(password)) {
             return
         }
-         try {
+        try {
 
             val formBody = FormBody.Builder()
                 .add("username", username)
@@ -121,7 +122,7 @@ class RefreshApolloConfigAction : AnAction("refresh Apollo Config Visualization"
             val configuration = ApolloViewConfiguration.getInstance(project)
 
             if (StringUtils.isNotBlank(configuration.cookie)) {
-                builder.header("Cookie",configuration.cookie)
+                builder.header("Cookie", configuration.cookie)
             }
 
             val request = builder
@@ -137,7 +138,7 @@ class RefreshApolloConfigAction : AnAction("refresh Apollo Config Visualization"
 //                        Messages.getInformationIcon()
 //                    )
                     val content = "加载环境 $env Apollo失败"
-                    showNotification(project,content)
+                    showNotification(project, content)
 
                 } else {
                     val body = response.body
@@ -157,7 +158,7 @@ class RefreshApolloConfigAction : AnAction("refresh Apollo Config Visualization"
                         }
                     } else {
                         val content = "加载环境 $env Apollo失败"
-                        showNotification(project,content)
+                        showNotification(project, content)
                     }
                 }
             }
