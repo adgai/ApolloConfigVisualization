@@ -23,10 +23,8 @@ class ApolloViewConfigurable(private val project: Project) : Configurable {
     private var methodSignatureTextField: JTextArea? = null
 
     // 新增登录网址、账号和密码输入框变量
-    private var loginUrlTextField: JTextField? = null
     private var accountTextField: JTextField? = null
     private var passwordField: JPasswordField? = null
-
 
     public fun createTitledSeparator(title: String): JComponent {
         val panel = JPanel( BorderLayout())
@@ -36,10 +34,8 @@ class ApolloViewConfigurable(private val project: Project) : Configurable {
         val label: JLabel = JLabel(title)
         val separator = JSeparator(JSeparator.HORIZONTAL)
 
-
         // 设置分割线的尺寸
         separator.preferredSize = Dimension(separator.preferredSize.width, 1)
-
 
         // 创建一个垂直布局的盒子
         val verticalBox = Box.createVerticalBox()
@@ -66,13 +62,6 @@ class ApolloViewConfigurable(private val project: Project) : Configurable {
         }
 
         foldingWhenEveryOpenFileRadioButton = JCheckBox("是否每次重新打开文件都折叠所有可以折叠的代码").apply {
-            alignmentX = Component.LEFT_ALIGNMENT
-        }
-
-        // 定义登录网址输入框
-        loginUrlTextField = JTextField().apply {
-            preferredSize = Dimension(400, 30)
-            toolTipText = "Enter the login URL here"
             alignmentX = Component.LEFT_ALIGNMENT
         }
 
@@ -150,7 +139,7 @@ class ApolloViewConfigurable(private val project: Project) : Configurable {
 
         // 创建一个 JFram("")
         val foldingSetting = createTitledSeparator("折叠设置")
-        val getCookieSetting = createTitledSeparator("获取cookie，输入账号密码登录网址或者直接填入cookie,两种方式二选一")
+        val getCookieSetting = createTitledSeparator("获取cookie，输入账号密码或者直接填入cookie,两种方式二选一")
         val getEnv = createTitledSeparator("获取哪些环境的配置，以及对应环境的url")
         val foldingMethodSignatureJSeparator = createTitledSeparator("需要折叠的方法的签名类似：configUtils.getInteger,逗号分割")
 
@@ -161,14 +150,8 @@ class ApolloViewConfigurable(private val project: Project) : Configurable {
             add(foldingPanel)
 
             add(getCookieSetting)
-            // 添加登录网址、账号和密码输入框
-            val loginUrlPanel = FormBuilder.createFormBuilder()
-                .addLabeledComponent(JBLabel("Login URL: "), loginUrlTextField!!, 4, false)
-                .panel.also {
-                    it.alignmentX = Component.LEFT_ALIGNMENT
-                }
-            add(loginUrlPanel)
 
+            // 添加账号和密码输入框
             val accountPanel = FormBuilder.createFormBuilder()
                 .addLabeledComponent(JBLabel("Account: "), accountTextField!!, 4, false)
                 .panel.also {
@@ -222,9 +205,8 @@ class ApolloViewConfigurable(private val project: Project) : Configurable {
         val isMethodSignatureModified = settings.methodSignatures != methodSignatureTextField?.text
         val isAccountModified = settings.account != (accountTextField?.text ?: "")
         val isPasswordModified = settings.password != String(passwordField?.password ?: CharArray(0))
-        val isLoginUrlModified = settings.loginUrl != (loginUrlTextField?.text ?: "")
 
-        return isKeyValuesModified || isCookieModified || isFoldingModified || isMethodSignatureModified || isAccountModified || isPasswordModified || isLoginUrlModified
+        return isKeyValuesModified || isCookieModified || isFoldingModified || isMethodSignatureModified || isAccountModified || isPasswordModified
     }
 
     override fun apply() {
@@ -239,7 +221,6 @@ class ApolloViewConfigurable(private val project: Project) : Configurable {
         configuration.methodSignatures = methodSignatureTextField?.text ?: ""
         configuration.account = accountTextField?.text ?: ""
         configuration.password = String(passwordField?.password ?: CharArray(0))
-        configuration.loginUrl = loginUrlTextField?.text ?: ""
     }
 
     override fun reset() {
@@ -254,7 +235,6 @@ class ApolloViewConfigurable(private val project: Project) : Configurable {
         methodSignatureTextField?.text = configuration.methodSignatures
         accountTextField?.text = configuration.account
         passwordField?.text = configuration.password
-        loginUrlTextField?.text = configuration.loginUrl
     }
 
     private val currentKeyValues: List<ApolloViewConfiguration.KeyValue>

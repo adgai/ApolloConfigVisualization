@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "im.codeman"
-version = "1.3"
+version = "1.4"
 
 repositories {
     mavenCentral()
@@ -17,7 +17,7 @@ repositories {
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
     version.set("2024.1.4")
-    systemProperty("idea.platform.prefix", "macOS-aarch64")
+//    systemProperty("idea.platform.prefix", "macOS-aarch64")
     type.set("IU") // Target IDE Platform
     plugins.set(listOf("com.intellij.java","java"))
     updateSinceUntilBuild.set(false)

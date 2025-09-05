@@ -13,18 +13,12 @@ import com.intellij.openapi.ui.Messages
 import okhttp3.*
 import org.apache.commons.collections.CollectionUtils
 import org.apache.commons.lang3.StringUtils
-import java.util.Arrays
 
 
 class RefreshApolloConfigAction : AnAction("refresh Apollo Config Visualization") {
     private var lastClickTime: Long = 0
-    val cookieJar = LocalCookieJar()
 
-    val client = OkHttpClient().newBuilder()
-        .followRedirects(false) //禁制OkHttp的重定向操作，我们自己处理重定向
-        .followSslRedirects(false)
-        .cookieJar(cookieJar) //为OkHttp设置自动携带Cookie的功能
-        .build();
+    var apolloHostToClient: MutableMap<String, OkHttpClient> = mutableMapOf()
 
     //CookieJar是用于保存Cookie的
     class LocalCookieJar : CookieJar {
@@ -68,45 +62,58 @@ class RefreshApolloConfigAction : AnAction("refresh Apollo Config Visualization"
             return
         }
 
-//        val message = keyValues.joinToString("\n") { "Key: ${it.key}, Value: ${it.value}" }
-//        Messages.showMessageDialog(
-//            message,
-//            "Configuration",
-//            Messages.getInformationIcon()
-//        )
+        // login to get cookie
+        preLoginToGetCookie(configuration)
 
-        loginAndGetCookie(configuration.loginUrl, configuration.account, configuration.password)
-
+        // get every env config
         sendGetRequestWithOkHttp(configuration, project)
-
-    }
-
-    private fun loginAndGetCookie(loginUrl: String, username: String, password: String) {
-        if (StringUtils.isBlank(loginUrl) || StringUtils.isBlank(username) || StringUtils.isBlank(password)) {
-            return
-        }
-        try {
-
-            val formBody = FormBody.Builder()
-                .add("username", username)
-                .add("password", password)
-                .build()
-
-            val request = Request.Builder()
-                .url(loginUrl)
-                .post(formBody)
-                .build()
-
-            client.newCall(request).execute()
-
-        } catch (_: Exception) {
-        }
 
     }
 
     override fun update(event: AnActionEvent) {
         // Optionally, disable the button if needed
         event.presentation.isEnabled = System.currentTimeMillis() - lastClickTime >= 30000
+    }
+
+    fun preLoginToGetCookie(config: ApolloViewConfiguration) {
+        config.keyValues.forEach { kv ->
+
+            val url = kv.value
+            if (StringUtils.isBlank(url)) {
+                return@forEach
+            }
+
+            val host = url?.let { it.split("apps")[0] } ?: return@forEach
+
+            val loginUrl = host + "signin"
+
+            val thisHostClient = apolloHostToClient.getOrPut(host) {
+                OkHttpClient().newBuilder()
+                    .followRedirects(false) //禁制OkHttp的重定向操作，我们自己处理重定向
+                    .followSslRedirects(false)
+                    .cookieJar(LocalCookieJar()) //为OkHttp设置自动携带Cookie的功能
+                    .build();
+            }
+
+            try {
+
+                val formBody = FormBody.Builder()
+                    .add("username", config.account)
+                    .add("password", config.password)
+                    .build()
+
+                val request = Request.Builder()
+                    .url(loginUrl)
+                    .post(formBody)
+                    .build()
+
+                thisHostClient.newCall(request).execute()
+
+            } catch (_: Exception) {
+            }
+
+
+        }
     }
 
     fun sendGetRequestWithOkHttp(config: ApolloViewConfiguration, project: Project) {
@@ -119,24 +126,26 @@ class RefreshApolloConfigAction : AnAction("refresh Apollo Config Visualization"
             val builder = Request.Builder()
 //                .header("Cookie",cookie)
                 .url(url.toString())
-            val configuration = ApolloViewConfiguration.getInstance(project)
 
-            if (StringUtils.isNotBlank(configuration.cookie)) {
-                builder.header("Cookie", configuration.cookie)
+            val host = url?.let { it.split("apps")[0] } ?: return@forEach
+
+            val hostClient = apolloHostToClient.get(host)
+
+            if (hostClient == null) {
+                return@forEach
+            }
+
+            if (StringUtils.isNotBlank(config.cookie)) {
+                builder.header("Cookie", config.cookie)
             }
 
             val request = builder
                 .build()
 
-            client.newCall(request).execute().use { response ->
-//                showNotification(project, "加载Apollo配置")
+            hostClient.newCall(request).execute().use { response ->
+
                 if (!response.isSuccessful) {
 
-//                    Messages.showMessageDialog(
-//                        String.format("环境：%s，加载配置失败", env),
-//                        "ApolloView",
-//                        Messages.getInformationIcon()
-//                    )
                     val content = "加载环境 $env Apollo失败"
                     showNotification(project, content)
 

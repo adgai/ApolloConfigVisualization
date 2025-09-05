@@ -34,7 +34,7 @@ class MyFoldingBuilder : FoldingBuilderEx() {
                     // 创建一个 FoldingDescriptor 并添加到列表中
                     val range = expression.textRange
 
-                    val placeholderText = "Apollo config is: " + getPlaceholderText(expression.node)
+                    val placeholderText = "⚙️: " + getPlaceholderText(expression.node)
                     val element = FoldingDescriptor(
                         expression.node,
                         range,

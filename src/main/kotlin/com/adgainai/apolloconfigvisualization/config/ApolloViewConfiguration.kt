@@ -5,7 +5,6 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.project.Project
-import com.intellij.ui.components.JBTextField
 import com.intellij.util.xmlb.XmlSerializerUtil
 import org.apache.commons.lang3.StringUtils
 
@@ -18,17 +17,13 @@ class ApolloViewConfiguration : PersistentStateComponent<ApolloViewConfiguration
 
     var cookie: String = ""
 
-    var envUrl: MutableMap<String, String> = mutableMapOf()
-
     var envToKeyToValue: MutableMap<String, MutableMap<String, String>> = mutableMapOf()
 
     var foldingWhenEveryOpenFile: Boolean = false
 
-     var methodSignatures : String  = ""
-    var account : String  = ""
-    var password : String  = ""
-    var loginUrl : String  = ""
-
+    var methodSignatures: String = ""
+    var account: String = ""
+    var password: String = ""
 
     override fun getState(): ApolloViewConfiguration? {
         return this
@@ -60,12 +55,12 @@ class ApolloViewConfiguration : PersistentStateComponent<ApolloViewConfiguration
     }
 
     fun getFoldingMethodCallExpress(): List<String> {
-     return  getFoldingMethodSignuture().map { it->it.split(".")[0] }.distinct().toList()
+        return getFoldingMethodSignuture().map { it -> it.split(".")[0] }.distinct().toList()
     }
 
-    fun getFoldingMethodSignuture():ArrayList<String>{
+    fun getFoldingMethodSignuture(): ArrayList<String> {
 
-        var splitMethodSignatureList =ArrayList<String>()
+        var splitMethodSignatureList: ArrayList<String>
 
         if (StringUtils.isNotBlank(methodSignatures)) {
             splitMethodSignatureList =
@@ -75,7 +70,7 @@ class ApolloViewConfiguration : PersistentStateComponent<ApolloViewConfiguration
             return splitMethodSignatureList
         }
 
-         splitMethodSignatureList = arrayListOf(
+        splitMethodSignatureList = arrayListOf(
             "configUtils.getBool",
             "configUtils.getBoolean",
             "configUtils.getInt",
