@@ -3,6 +3,7 @@ package com.adgainai.apolloconfigvisualization.action
 
 import apollo.NamespaceBO
 import com.adgainai.apolloconfigvisualization.config.ApolloViewConfiguration
+import com.adgainai.apolloconfigvisualization.config.CodemanGlobalSettings
 import com.alibaba.fastjson2.JSON
 import com.alibaba.fastjson2.TypeReference
 import com.intellij.openapi.actionSystem.ActionUpdateThread
@@ -50,8 +51,10 @@ class RefreshApolloConfigAction : AnAction("refresh Apollo Config Visualization"
 //        lastClickTime = currentTime
 
         val project = event.project ?: return
-        val configuration = ApolloViewConfiguration.getInstance(project)
-        val keyValues = configuration.keyValues
+        val projectConfig = ApolloViewConfiguration.getInstance(project)
+        val globalConfig = CodemanGlobalSettings.instance.state
+
+        val keyValues = globalConfig.keyValues
 
         if (CollectionUtils.isEmpty(keyValues)) {
             Messages.showMessageDialog(
@@ -63,10 +66,10 @@ class RefreshApolloConfigAction : AnAction("refresh Apollo Config Visualization"
         }
 
         // login to get cookie
-        preLoginToGetCookie(configuration)
+        preLoginToGetCookie(globalConfig)
 
         // get every env config
-        sendGetRequestWithOkHttp(configuration, project)
+        sendGetRequestWithOkHttp(projectConfig, globalConfig, project)
 
     }
 
@@ -75,7 +78,7 @@ class RefreshApolloConfigAction : AnAction("refresh Apollo Config Visualization"
         event.presentation.isEnabled = System.currentTimeMillis() - lastClickTime >= 30000
     }
 
-    fun preLoginToGetCookie(config: ApolloViewConfiguration) {
+    fun preLoginToGetCookie(config: CodemanGlobalSettings.State) {
         config.keyValues.forEach { kv ->
 
             val url = kv.value
@@ -116,16 +119,24 @@ class RefreshApolloConfigAction : AnAction("refresh Apollo Config Visualization"
         }
     }
 
-    fun sendGetRequestWithOkHttp(config: ApolloViewConfiguration, project: Project) {
+    fun sendGetRequestWithOkHttp(
+        projectConfig: ApolloViewConfiguration,
+        config: CodemanGlobalSettings.State,
+        project: Project
+    ) {
 
         var envToKeyToValue: MutableMap<String, MutableMap<String, String>> = mutableMapOf()
 
         config.keyValues.forEach { kv ->
             val env = kv.key
             val url = kv.value
+
+            val pn = projectConfig.projectName
+                ?.takeIf { it.isNotBlank() }
+                ?: project.name
+
             val builder = Request.Builder()
-//                .header("Cookie",cookie)
-                .url(url.toString())
+                .url(String.format(url.toString(), pn))
 
             val host = url?.let { it.split("apps")[0] } ?: return@forEach
 
@@ -172,7 +183,7 @@ class RefreshApolloConfigAction : AnAction("refresh Apollo Config Visualization"
                 }
             }
 
-            config.envToKeyToValue = envToKeyToValue
+            projectConfig.envToKeyToValue = envToKeyToValue
 
         };
 

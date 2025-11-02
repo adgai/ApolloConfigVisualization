@@ -1,10 +1,13 @@
 package com.adgainai.apolloconfigvisualization
 
 import com.adgainai.apolloconfigvisualization.config.ApolloViewConfiguration
+import com.adgainai.apolloconfigvisualization.config.CodemanGlobalSettings
+import com.intellij.codeInsight.folding.CodeFoldingSettings
 import com.intellij.lang.ASTNode
 import com.intellij.lang.folding.FoldingBuilderEx
 import com.intellij.lang.folding.FoldingDescriptor
 import com.intellij.openapi.editor.Document
+import com.intellij.openapi.project.Project
 import com.intellij.psi.*
 import org.apache.commons.collections.MapUtils
 import org.apache.commons.lang3.StringUtils
@@ -21,8 +24,10 @@ class MyFoldingBuilder : FoldingBuilderEx() {
         val root = node.psi
         val project = root.project
         val configuration = ApolloViewConfiguration.getInstance(project)
+        val config = CodemanGlobalSettings.instance
 
-        val splitMethodSignatureList = configuration.getFoldingMethodSignuture()
+
+        val splitMethodSignatureList = config.getFoldingMethodSignuture()
 
         // 使用递归访问者遍历 PSI 树查找方法调用
         root.accept(object : JavaRecursiveElementVisitor() {
@@ -128,8 +133,30 @@ class MyFoldingBuilder : FoldingBuilderEx() {
             return value
         }else if (ele is PsiBinaryExpression){
             return (ele as PsiBinaryExpression).text
+        }else if (ele is PsiReferenceExpression){
+            return getConstantValueFromReference(ele, ele.project)
         }
 
         return null
     }
+
+    fun getConstantValueFromReference(ref: PsiReferenceExpression, project: Project): Any? {
+        // 解析引用到的目标
+        val resolved = ref.resolve() ?: return null
+
+        if (resolved is PsiVariable) {
+            val initializer = resolved.initializer ?: return null
+
+            // 使用 IntelliJ 自带的常量计算器
+            val value = JavaPsiFacade.getInstance(project)
+                .constantEvaluationHelper
+                .computeConstantExpression(initializer)
+
+            // 例如字符串、数字、布尔值等
+            return value
+        }
+
+        return null
+    }
+
 }

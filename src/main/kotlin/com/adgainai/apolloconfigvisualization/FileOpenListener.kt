@@ -1,6 +1,7 @@
 package com.adgainai.apolloconfigvisualization
 
 import com.adgainai.apolloconfigvisualization.config.ApolloViewConfiguration
+import com.adgainai.apolloconfigvisualization.config.CodemanGlobalSettings
 import com.intellij.lang.folding.FoldingDescriptor
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.impl.FoldingModelImpl
@@ -25,11 +26,13 @@ class FileOpenListener : FileEditorManagerListener {
 
     override fun fileOpened(source: FileEditorManager, file: VirtualFile) {
 
-        val configuration = ApolloViewConfiguration.getInstance(
+        val globalConfig = CodemanGlobalSettings.instance.state
+
+        val projectConfig = ApolloViewConfiguration.getInstance(
             source.project
         )
 
-           if (!configuration.foldingWhenEveryOpenFile) {
+           if (!globalConfig.foldingWhenEveryOpenFile) {
             return
         }
         // 在文件打开时触发构建代码折叠区域的逻辑
@@ -92,10 +95,14 @@ class FileOpenListener : FileEditorManagerListener {
 
     // 构建代码折叠区域的描述符的逻辑
     private fun buildFoldingDescriptors(psiFile: PsiFile, project: Project) {
-        val configuration = ApolloViewConfiguration.getInstance(
+        val projectConfig = ApolloViewConfiguration.getInstance(
             project
         )
-        val foldingMethodCallExpress = configuration.getFoldingMethodCallExpress()
+
+        val globalConfig = CodemanGlobalSettings.instance.state
+
+
+        val foldingMethodCallExpress = CodemanGlobalSettings.instance.getFoldingMethodCallExpress()
 
         // 获取文件的 Document 对象
         val document: Document? = PsiDocumentManager.getInstance(project).getDocument(psiFile)
@@ -135,7 +142,10 @@ class FileOpenListener : FileEditorManagerListener {
             source.project
         )
 
-        if (!configuration.foldingWhenEveryOpenFile) {
+        val globalConfig = CodemanGlobalSettings.instance.state
+
+
+        if (!globalConfig.foldingWhenEveryOpenFile) {
             return
         }
 

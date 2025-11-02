@@ -30,11 +30,23 @@
         />
 
         <projectConfigurable
-                id="ApolloConfig"
+                id="ApolloConfigProject"
                 groupId="tools"
                 instance="com.adgainai.apolloconfigvisualization.config.ApolloViewConfigurable"
-                displayName="ApolloConfig Setting"/>
+                displayName="ApolloConfig Project Setting"/>
 
+
+        <!-- 注册全局 Service -->
+        <applicationService
+                serviceImplementation="com.adgainai.apolloconfigvisualization.config.CodemanGlobalSettings"/>
+
+        <!-- 注册全局设置页面 -->
+        <applicationConfigurable
+                id="ApolloConfigGlobal"
+                groupId="tools"
+                instance="com.adgainai.apolloconfigvisualization.config.CodemanSettingsConfigurable"
+                displayName="ApolloConfig Global Setting"
+        />
 
     </extensions>
 
@@ -54,7 +66,21 @@
     <change-notes>
 
         <![CDATA[
-        <h2>1.0-4<h2>
+        <h2>1.4</h2>
+        <ul>
+        <li>
+        account config support global, in settings: tools-> ApolloConfig Global Setting
+        </li>
+
+        <li>
+        read project name ad apollo app name default, you also can config apollo name, in settings: tools-> ApolloConfig Project Setting
+        </li>
+
+        </ul>
+        ]]>
+
+        <![CDATA[
+        <h2>1.0-4</h2>
         <ul>
         <li>
        support multi env diff host
