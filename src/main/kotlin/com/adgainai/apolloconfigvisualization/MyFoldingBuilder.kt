@@ -2,7 +2,6 @@ package com.adgainai.apolloconfigvisualization
 
 import com.adgainai.apolloconfigvisualization.config.ApolloViewConfiguration
 import com.adgainai.apolloconfigvisualization.config.CodemanGlobalSettings
-import com.intellij.codeInsight.folding.CodeFoldingSettings
 import com.intellij.lang.ASTNode
 import com.intellij.lang.folding.FoldingBuilderEx
 import com.intellij.lang.folding.FoldingDescriptor
@@ -10,7 +9,6 @@ import com.intellij.openapi.editor.Document
 import com.intellij.openapi.project.Project
 import com.intellij.psi.*
 import org.apache.commons.collections.MapUtils
-import org.apache.commons.lang3.StringUtils
 
 
 class MyFoldingBuilder : FoldingBuilderEx() {
@@ -131,9 +129,9 @@ class MyFoldingBuilder : FoldingBuilderEx() {
             val value = ele.value
 
             return value
-        }else if (ele is PsiBinaryExpression){
+        } else if (ele is PsiBinaryExpression) {
             return (ele as PsiBinaryExpression).text
-        }else if (ele is PsiReferenceExpression){
+        } else if (ele is PsiReferenceExpression) {
             return getConstantValueFromReference(ele, ele.project)
         }
 
@@ -144,6 +142,11 @@ class MyFoldingBuilder : FoldingBuilderEx() {
         // 解析引用到的目标
         val resolved = ref.resolve() ?: return null
 
+        if (resolved is PsiField) {
+
+            return resolved.nameIdentifier.text
+        }
+
         if (resolved is PsiVariable) {
             val initializer = resolved.initializer ?: return null
 
@@ -153,10 +156,15 @@ class MyFoldingBuilder : FoldingBuilderEx() {
                 .computeConstantExpression(initializer)
 
             // 例如字符串、数字、布尔值等
+
+            if (value == null) {
+                return getStaticConstantValue(resolved)
+            }
             return value
         }
 
         return null
     }
+
 
 }
