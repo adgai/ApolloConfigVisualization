@@ -119,6 +119,8 @@ class MyFoldingBuilder : FoldingBuilderEx() {
                 }
             }
 
+        } else if (ele is PsiLiteralExpression) {
+            return ele.text.replace("\"", "")
         }
 
         return null
